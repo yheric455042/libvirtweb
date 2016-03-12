@@ -1,0 +1,25 @@
+.loading-list {
+	background: url('../img/index-loader.gif') no-repeat center;
+	height: 120px;
+	margin: 0 auto;
+    margin-top: 200px;
+}
+
+.loading-action {
+	background: url('../img/action-loader.gif') no-repeat center;
+	height: 30px;
+	margin: 0 auto;
+}
+
+#vmControl {
+    width: 300px;
+
+}
+
+#state {
+    width: 177px;
+}
+
+#name {
+    width: 300px;
+}

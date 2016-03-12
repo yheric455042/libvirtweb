@@ -1,0 +1,12 @@
+.login-page {
+	width: 600px;
+	height: 800px;
+	margin: 0 auto;
+	margin-top: 200px;
+}
+
+.loading-login {
+	background: url('../img/login-loader.gif') no-repeat center;
+	height: 30px;
+	margin: 0 auto;
+}
