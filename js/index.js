@@ -117,22 +117,20 @@
 				var action  = $('<td>');
                 var action_td = $('<td>').attr({id: 'vmControl'});
                 var div = $('<div>');
-
-			    tr.append($('<td id="name">').text(vm.name));
-				tr.append($('<td id="vcpu">').text(vm.vcpu));
-				tr.append($('<td id="mem">').text(vm.mem));
-				tr.append($('<td id="disk">').text(vm.disk));
-				tr.append($('<td id="arch">').text(vm.arch));	
-				tr.append($('<td id="state">').append($('<div>').append(vm.state)));
-                tr.append(index.stateControl(vm.state, div, vm.uuid));
-
-                action_td.append(div);
-                
-                tr.append(action_td);
-				$('.list tbody').append(tr);
-                $('.wrap').show();
-                $('.loading-list').hide();
-                
+                if(vm.name != null) {
+                    tr.append($('<td id="name">').text(vm.name));
+                    tr.append($('<td id="vcpu">').text(vm.vcpu));
+                    tr.append($('<td id="mem">').text(vm.mem));
+                    tr.append($('<td id="disk">').text(vm.disk));
+                    tr.append($('<td id="arch">').text(vm.arch));	
+                    tr.append($('<td id="state">').append($('<div>').append(vm.state)));
+                    tr.append(index.stateControl(vm.state, div, vm.uuid));
+                    action_td.append(div);
+                    tr.append(action_td);
+                    $('.list tbody').append(tr);
+                }
+                    $('.wrap').show();
+                    $('.loading-list').hide();
 			});
 
 		});

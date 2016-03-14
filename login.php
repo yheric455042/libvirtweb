@@ -14,6 +14,7 @@
 		<script type="text/javascript" src="js/login.js"></script>
 </head>
 <body>
+    <form action="" method="post">
 	<div class="login-page">
 	<div class="control-group">
 		<label class="control-label" for="uid">帳號</label>
@@ -31,6 +32,7 @@
 		<button id="login-submit" class="btn btn-primary">提交</button>
 	</div>
 	</div>
+    </form>
 </body>
 </html>
 
