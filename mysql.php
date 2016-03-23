@@ -25,6 +25,27 @@ class MySQL {
 		
 		return $arr;
 	}
+
+    public function insert($sql) {
+        $result = mysql_query($sql);
+        if($result === false){
+            die(mysql_error());
+        }
+        
+        return true;
+    
+    }
+
+    public function update($sql) {
+        $result = mysql_query($sql);
+        if($result === false){
+            die(mysql_error());
+        }
+        
+        return true;
+    
+    }
+
 }
 	
 

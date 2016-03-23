@@ -7,9 +7,11 @@ class Controller {
 	private $SQLClass;
 	private $libvirt = array();
     private $ips;
+    private $templates;
     //private $config;
-	public function __construct($SQLClass, $hosts_ip) {
+	public function __construct($SQLClass, $hosts_ip, $templates) {
 		$this->SQLClass = $SQLClass;
+        $this->templates = $templates;
         $this->ips = $hosts_ip;
         for($i = 0; $i < sizeof($hosts_ip); $i++) {
 		    $this->libvirt[$i] = new Libvirt('qemu+ssh://root@'.$hosts_ip[$i].'/system');
@@ -64,15 +66,105 @@ class Controller {
 		return $vms;
 	}
 
-    private function createVM($host, $vcpu, $mem, $template) {
-         
-    
+    public function pendingCreate($params) {
+        $name = $params['name'];    
+        $isadmin = $params['isadmin'];    
+        $uid = $params['uid'];    
+        $vcpu = $params['vcpu'];    
+        $mem = $params['mem'];    
+        $template = $params['template'];    
+        $host = $params['host'];
+
+        if($isadmin == 'true') {
+            $sql = "INSERT INTO vmlist (uid, name, host) VALUES('$uid','$name',$host)";
+
+            if($this->SQLClass->insert($sql)) {
+                return array('uuid' => $this->createVM($host, $vcpu, $mem, $template, $uid, $name));
+            }
+        } else {
+        
+            $sql = "INSERT INTO pending_list (uid, name, vcpu, mem, template) VALUES('$uid', '$name', $vcpu, $mem, $template)";
+
+            if($this->SQLClass->insert($sql)) {
+                return 'success';
+            } else {
+                return 'error';
+            }
+        }
+    }  
+
+    private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
+        $memory = ((int)$mem)*1024*1024;
+        exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
+        $xml = "
+        <domain type='qemu'>
+          <name>".$uid."-".$name."</name>
+          <memory unit='KiB'>$memory</memory>
+          <currentMemory unit='KiB'>$memory</currentMemory>
+          <vcpu placement='static'>$vcpu</vcpu>
+          <os>
+            <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
+            <boot dev='hd'/>
+          </os>
+          <features>
+            <acpi/>
+            <apic/>
+          </features>
+          <clock offset='utc'>
+            <timer name='rtc' tickpolicy='catchup'/>
+            <timer name='pit' tickpolicy='delay'/>
+            <timer name='hpet' present='no'/>
+          </clock>
+          <on_poweroff>destroy</on_poweroff>
+          <on_reboot>restart</on_reboot>
+          <on_crash>restart</on_crash>
+          <pm>
+            <suspend-to-mem enabled='no'/>
+            <suspend-to-disk enabled='no'/>
+          </pm>
+          <devices>
+            <emulator>/usr/libexec/qemu-kvm</emulator>
+            <disk type='file' device='disk'>
+              <driver name='qemu' type='qcow2'/>
+              <source file='/var/lib/libvirt/images/".$this->templates[$template]."'/>
+              <target dev='vda' bus='virtio'/>
+            </disk>
+            <controller type='usb' index='0' model='ich9-ehci1' />
+            <controller type='usb' index='0' model='ich9-uhci1' />
+            <controller type='pci' index='0' model='pci-root'/>
+            <controller type='ide' index='0' />
+            <controller type='virtio-serial' index='0' />
+            <interface type='bridge'>
+              <mac address='".$this->libvirt[$host]->generate_random_mac_addr()."'/>
+              <source bridge='br0'/>
+              <model type='virtio'/>
+            </interface>
+            <serial type='pty'>
+              <target port='0'/>
+            </serial>
+            <console type='pty'>
+              <target type='serial' port='0'/>
+            </console>
+            <input type='mouse' bus='ps2'/>
+            <input type='keyboard' bus='ps2'/>
+            <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0' />
+            <video>
+              <model type='vga' vram='16384' heads='1'/>
+            </video>
+          </devices>
+        </domain> 
+        ";
+
+
+        $res = $this->libvirt[$host]->domain_define($xml);
+        $uuid = libvirt_domain_get_uuid_string($res);
+        $domName = $this->libvirt[$host]->domain_get_name_by_uuid($uuid);
+        $this->libvirt[$host]->domain_start($domName);
+        
+        return $uuid;
     }
 
-    private function deleteVM($host, $vmname) {
-         
     
-    }
 
     //$host is string that it is ip address
     public function domainControl($params) {

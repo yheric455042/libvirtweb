@@ -14,6 +14,8 @@ if(!isset($_SESSION['uid'])) {
 		<link type="text/css" rel="stylesheet" href="css/index.css"/>
 		<script type="text/javascript" src="js/jquery-1.7.1.min.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
+		<script type="text/javascript" src="js/create.js"></script>
+		<script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
 <div class="navbar navbar-inverse navbar-fixed-top">
@@ -38,9 +40,7 @@ if(!isset($_SESSION['uid'])) {
 <div class="loading-list"></div>
 
 <div class="wrap">
-	<div class="info">
-		<button id="create_vm" class="btn btn-primary"><i class="icon-plus icon-white"></i>添加虛擬機</button>
-	</div>
+		<button id="create_vm" class="btn btn-info btn-lg" data-toggle="modal" data-target="#create_modal"><i class="icon-plus icon-white"></i>添加虛擬機</button>
 
 	<div class="list">
 		<table class="table table-bordered">
@@ -59,6 +59,74 @@ if(!isset($_SESSION['uid'])) {
 		</tbody>
 		</table>	
 	</div>
+    
+    <div class='modal fade' id="create_modal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">創建虛擬機</h4>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="control-group">
+                        <label class="control-label" for="Inputname">虛擬機名稱</label>
+                        <div class="controls">
+                            <input type="text" id="Inputname">
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="Inputmem">記憶體</label>
+                        <div class="controls">
+                            <select id="Inputmem">
+                                <option value="1">1G</option>
+                                <option value="2">2G</option>
+                                <option value="3">3G</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="control-group">
+                        <label class="control-label" for="Inputvcpu">CPU個數</label>
+                        <div class="controls">
+                            <select id="Inputvcpu">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="control-group">
+                        <label class="control-label" for="Inputtemplate">模板</label>
+                        <div class="controls">
+                            <select id="Inputtemplate">
+                                <option value="0">Win7</option>
+                                <option value="1">CentOS7</option>
+                                <option value="2">Ubuntu14.04</option>
+                            </select>
+
+                        </div>
+                    </div>
+                    <div class="control-group isadmin">
+                        <label class="control-label" for="Inputhost">實體主機</label>
+                        <div class="controls">
+                            <select id="Inputhost">
+                            </select>
+
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default"  value="create_submit">提交</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
 </div>
 </body>
 </html>

@@ -1,6 +1,4 @@
-(function ($) {
-	
-	var index = {
+var index = {
 		uid: '',
 		isadmin: '',
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
@@ -9,8 +7,12 @@
 		forceoffButton: $('<button>').attr({class: 'vmAction btn btn-warning' , id: 'forceoff'}),
 		VNCButton: $('<button>').attr({class: 'vmAction btn btn-warning' , id: 'VNC'}),
 
-	};
-    
+};
+
+
+(function ($) {
+	
+	    
     index.init = function() {
         index.startButton.text('開機');
         index.shutdownButton.text('關機');
@@ -31,7 +33,8 @@
 			data: {
 				action: 'getVMList',
 				params: {
-					uid: user
+					uid: user,
+                    isadmin: index.isadmin
 				}
 			}
 		});
@@ -182,6 +185,8 @@
 
 			});
 		});
+
+
 	});
 
 })(jQuery);

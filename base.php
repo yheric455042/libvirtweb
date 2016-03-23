@@ -2,13 +2,10 @@
 require_once('mysql.php');
 require_once('controller.php');
 require_once('config.php');
-session_start();
-if(!isset($_SESSION['uid'])) {
-	header('Location : login.php');
-}
+
 
 $mysql = new MySQL();
-$controller = new Controller($mysql, $hosts_ip);
+$controller = new Controller($mysql, $hosts_ip, $templates);
 
 switch ($_POST['action']) {
 	case 'login':
@@ -35,6 +32,14 @@ switch ($_POST['action']) {
         echo json_encode($controller->domainControl($_POST['params']));
         break;
 
-    }
+    case 'hostCount':
+        echo count($hosts_ip);
+        break;
+
+
+    case 'pendingCreate':
+        echo $controller->pendingCreate($_POST['params']);
+        break;
+}
 
 ?>

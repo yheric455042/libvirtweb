@@ -1,0 +1,56 @@
+<domain type='qemu'>
+  <name>test</name>
+  <memory unit='KiB'>524288</memory>
+  <currentMemory unit='KiB'>524288</currentMemory>
+  <vcpu placement='static'>1</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <features>
+    <acpi/>
+    <apic/>
+  </features>
+  <clock offset='utc'>
+    <timer name='rtc' tickpolicy='catchup'/>
+    <timer name='pit' tickpolicy='delay'/>
+    <timer name='hpet' present='no'/>
+  </clock>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>restart</on_crash>
+  <pm>
+    <suspend-to-mem enabled='no'/>
+    <suspend-to-disk enabled='no'/>
+  </pm>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2'/>
+      <source file='/var/lib/libvirt/images/tem.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+    <controller type='usb' index='0' model='ich9-ehci1' />
+    <controller type='usb' index='0' model='ich9-uhci1' />
+    <controller type='pci' index='0' model='pci-root'/>
+    <controller type='ide' index='0' />
+    <controller type='virtio-serial' index='0' />
+    <interface type='bridge'>
+      <mac address='52:54:00:96:83:bf'/>
+      <source bridge='br0'/>
+      <model type='virtio'/>
+    </interface>
+    <serial type='pty'>
+      <target port='0'/>
+    </serial>
+    <console type='pty'>
+      <target type='serial' port='0'/>
+    </console>
+    <input type='mouse' bus='ps2'/>
+    <input type='keyboard' bus='ps2'/>
+    <graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0' />
+    <video>
+      <model type='vga' vram='16384' heads='1'/>
+    </video>
+  </devices>
+</domain>
