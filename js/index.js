@@ -104,24 +104,28 @@ var index = {
         index.init();
         
 		index.getCurrentUid().done(function (data) {
-			var li = $('<li>').attr({class: 'navbar-right'});
-			var font = $('<font>').attr({color: 'white'});
-			font.text('歡迎 '+data.uid);
-			li.append(font);
-			$('ul').append(li);
+			var li = $('#uid');
+			var p = $('<p>').attr({class: 'navbar-text'});
+			p.text('歡迎 '+data.uid);
+			li.append(p);
 	
 			index.uid = data.uid;
 			index.isadmin = data.isadmin === '1' ? true : false;
 		});
 		
 		index.getVMList(index.uid).done(function (data) {
+            $('.wrap').hide();
+            $('.loading-list').show();
+            index.isadmin ? $('table .isadmin').show() : $('table .isadmin').hide();
 			data.forEach(function (vm) {
 				var tr = $('<tr>');
 				var action  = $('<td>');
                 var action_td = $('<td>').attr({id: 'vmControl'});
                 var div = $('<div>');
                 if(vm.name != null) {
+                    index.isadmin && tr.append($('<td id="uid">').text(vm.uid));
                     tr.append($('<td id="name">').text(vm.name));
+                    index.isadmin && tr.append($('<td id="host">').text(vm.host));
                     tr.append($('<td id="vcpu">').text(vm.vcpu));
                     tr.append($('<td id="mem">').text(vm.mem));
                     tr.append($('<td id="disk">').text(vm.disk));
@@ -132,9 +136,10 @@ var index = {
                     tr.append(action_td);
                     $('.list tbody').append(tr);
                 }
-                    $('.wrap').show();
-                    $('.loading-list').hide();
-			});
+            });
+            $('.wrap').show();
+            $('.loading-list').hide();
+
 
 		});
 	    

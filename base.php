@@ -40,6 +40,10 @@ switch ($_POST['action']) {
     case 'pendingCreate':
         echo $controller->pendingCreate($_POST['params']);
         break;
+
+    case 'pendingList':
+        echo json_encode($controller->getpendingList($_POST['params']));
+        break;
 }
 
 ?>

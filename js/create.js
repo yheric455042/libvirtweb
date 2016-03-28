@@ -37,9 +37,15 @@
 
 
     $(function () {
+        plus = $('<i>').append({class: 'icon-plus icon-white'});
+        $('#create_vm').append(plus);
         if(!index.isadmin) {
-            $('.isadmin').hide(); 
+            $('.isadmin').hide();
+
+            $('#create_vm').text('申請虛擬機');
         } else {
+            
+            $('#create_vm').text('添加虛擬機');
             create.gethostCount().done(function(count) {
                  
                 for(var i=0; i<count;i++) {
@@ -57,15 +63,14 @@
                 var mem = $('#Inputmem').val();    
                 var template = $('#Inputtemplate').val();    
                 var host = $('#Inputhost').val();
-
+                var button = $(this);
                 create.sendData(name, vcpu, mem, template, host).done(function (data) {
-                   console.dir(data); 
-                
+                   
+                    console.dir(data);
                 });
 
 
 
-                $(this).attr({'data-dismiss': 'modal'});
             
             }
         }); 

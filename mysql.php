@@ -46,6 +46,16 @@ class MySQL {
     
     }
 
+    public function delete($sql) {
+        $result = mysql_query($sql);
+        if($result === false){
+            die(mysql_error());
+        }
+        
+        return true;
+    
+    }
+
 }
 	
 

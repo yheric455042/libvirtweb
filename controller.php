@@ -17,6 +17,12 @@ class Controller {
 		    $this->libvirt[$i] = new Libvirt('qemu+ssh://root@'.$hosts_ip[$i].'/system');
         }
 	}
+    
+    private function getUser() {
+        session_start();
+        
+        return array('uid' => $_SESSION['uid'], 'isadmin' => $_SESSION['isadmin']);
+    }
 
 	public function login($params) {
 		$uid = $params['uid'];
@@ -40,35 +46,31 @@ class Controller {
 	}
 	
 	public function getVMList($params) {
-		$uid = $params['uid'];
-		$vms = array();
-        
-		//TODO test function  will be modified
-		$host = $this->libvirt;
-		$doms = $host[0]->get_domains();
-		
-		for($i = 0; $i < sizeof($doms); $i++) {
-			$name = $doms[$i];
-            $res = $host[0]->get_domain_by_name($name);
+        $userArray = $this->getUser();
+        $uid = $userArray['uid'];
+        $where = $userArray['isadmin'] == 'true' ? "1" : "uid = '$uid'";
+
+		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where");
+        $outputs = array();
+	    foreach($vms as $vm) {
+			$name = $vm['uid']."-".$vm['name'];
+            $res = $this->libvirt[$vm['host']]->get_domain_by_name($name);
 			$uuid = libvirt_domain_get_uuid_string($res);
-            $dom = $host[0]->domain_get_info($res);
-            $mem = number_format($dom['memory'] / 1024, 2, '.', ' ').' MB';
-            if($dom['memory'] == 0) $mem = ' - ';
+            $dom = $this->libvirt[$vm['host']]->domain_get_info($res);
             $cpu = $dom['nrVirtCpu'];
-			$arch = $host[0]->domain_get_arch($res);
-            $state = $host[0]->domain_state_translate($dom['state']);
-            $vnc = $host[0]->domain_get_vnc_port($res);
-			$disk = $host[0]->get_disk_capacity($res);
+			$arch = $this->libvirt[$vm['host']]->domain_get_arch($res);
+            $state = $this->libvirt[$vm['host']]->domain_state_translate($dom['state']);
+            $vnc = $this->libvirt[$vm['host']]->domain_get_vnc_port($res);
+			$disk = $this->libvirt[$vm['host']]->get_disk_capacity($res);
 			$token = 'test';//demo test
-			array_push($vms, array('name'=>$name, 'vcpu'=>$cpu, 'mem'=>$mem, 'disk'=>$disk, 'arch'=>$arch ,'state'=>$state, 'uuid'=>$uuid, 'token'=>$token));
+			array_push($outputs, array('uid'=>$vm['uid'], 'name'=>$vm['name'], 'vcpu'=>$cpu, 'mem'=>$vm['mem']."G", 'disk'=>$disk, 'arch'=>$arch ,'state'=>$state, 'uuid'=>$uuid, 'token'=>$token, 'host'=>$vm['host']));
 		}
-		
-		return $vms;
+		return $outputs;
 	}
 
     public function pendingCreate($params) {
         $name = $params['name'];    
-        $isadmin = $params['isadmin'];    
+        $isadmin = $params['isadmin'];
         $uid = $params['uid'];    
         $vcpu = $params['vcpu'];    
         $mem = $params['mem'];    
@@ -76,7 +78,7 @@ class Controller {
         $host = $params['host'];
 
         if($isadmin == 'true') {
-            $sql = "INSERT INTO vmlist (uid, name, host) VALUES('$uid','$name',$host)";
+            $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES('$uid','$name',$host, $mem)";
 
             if($this->SQLClass->insert($sql)) {
                 return array('uuid' => $this->createVM($host, $vcpu, $mem, $template, $uid, $name));
@@ -164,6 +166,19 @@ class Controller {
         return $uuid;
     }
 
+    public function getpendingList($params) {
+        $userArray = getUser();
+        $uid = $userArray['uid'];
+        $where = $userAray['isadmin'] ? "1" : "uid = '$uid'";
+        $sql = "SELECT * FROM pending_list WHERE = $where";
+        $list = array();
+        foreach($this->SQLClass->select($sql) as $request) {
+            array_push($list, $request);
+        
+        }
+    
+        return $list;
+    }
     
 
     //$host is string that it is ip address
@@ -174,6 +189,9 @@ class Controller {
         $action = $params['action'];
         $expectState = $action == 'start' ? 'running' : 'shutoff';
         $domName = $this->libvirt[$host]->domain_get_name_by_uuid($params['uuid']);
+        $uidANDname = split($domName, "-");
+        $uid = $uidANDname[0];
+        $name = $uidANDname[1];
         $res = $this->libvirt[$host]->get_domain_by_name($domName);
 
         switch($action) {
@@ -214,9 +232,9 @@ class Controller {
                     $state = $this->libvirt[$host]->domain_undefine($domName);
 
                     if($state) {
-                       exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$domName.'.qcow2');
-                       
-                       $msg = 'success_delete';
+                        exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$domName.'.qcow2');
+                        $this->SQLClass->delete("DELETE FROM vmlist WHERE uid='$uid' AND name='$name'");   
+                        $msg = 'success_delete';
 
                     } else {
                         $msg =  'error';
@@ -226,7 +244,6 @@ class Controller {
                     $msg = 'is_running';
                 
                 }
-
                 break;
         }
 
