@@ -20,7 +20,7 @@ class Controller {
     
     private function getUser() {
         session_start();
-        
+         
         return array('uid' => $_SESSION['uid'], 'isadmin' => $_SESSION['isadmin']);
     }
 
@@ -48,8 +48,7 @@ class Controller {
 	public function getVMList($params) {
         $userArray = $this->getUser();
         $uid = $userArray['uid'];
-        $where = $userArray['isadmin'] == 'true' ? "1" : "uid = '$uid'";
-
+        $where = $userArray['isadmin'] == '1' ? "1" : "uid = '$uid'";
 		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where");
         $outputs = array();
 	    foreach($vms as $vm) {
@@ -65,6 +64,7 @@ class Controller {
 			$token = 'test';//demo test
 			array_push($outputs, array('uid'=>$vm['uid'], 'name'=>$vm['name'], 'vcpu'=>$cpu, 'mem'=>$vm['mem']."G", 'disk'=>$disk, 'arch'=>$arch ,'state'=>$state, 'uuid'=>$uuid, 'token'=>$token, 'host'=>$vm['host']));
 		}
+        $outputs['isadmin'] = $userArray['isadmin'];
 		return $outputs;
 	}
 
@@ -167,15 +167,17 @@ class Controller {
     }
 
     public function getpendingList($params) {
-        $userArray = getUser();
+        $userArray = $this->getUser();
         $uid = $userArray['uid'];
-        $where = $userAray['isadmin'] ? "1" : "uid = '$uid'";
-        $sql = "SELECT * FROM pending_list WHERE = $where";
+        $where = $userAray['isadmin']  = '1'? "1" : "uid = '$uid'";
+        $sql = "SELECT * FROM pending_list WHERE  $where";
         $list = array();
         foreach($this->SQLClass->select($sql) as $request) {
+            $request['template'] = substr($this->templates[$request['template']],0,-6);
             array_push($list, $request);
         
         }
+        $list['isadmin'] = $userArray['isadmin'];
     
         return $list;
     }
@@ -233,7 +235,7 @@ class Controller {
 
                     if($state) {
                         exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$domName.'.qcow2');
-                        $this->SQLClass->delete("DELETE FROM vmlist WHERE uid='$uid' AND name='$name'");   
+                        $this->SQLClass->delete("DELETE FROM vmlist WHERE uid='$uid' AND name='$name'"); 
                         $msg = 'success_delete';
 
                     } else {

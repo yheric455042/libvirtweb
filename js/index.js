@@ -1,6 +1,7 @@
 var index = {
 		uid: '',
 		isadmin: '',
+        view: ['wrap', 'pending'],
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),
@@ -11,16 +12,42 @@ var index = {
 
 
 (function ($) {
-	
-	    
+
+	index.transshow = function(hideORshow, element) {
+        
+
+        if(hideORshow == 'hide') {
+            for(var i=0; i < index.view.length; i++) {
+                $('.'+index.view[i]).hide();
+            }
+            $('.loading-list').show();
+        } else if(hideORshow == 'show'){
+            $('.loading-list').hide();
+            element.show();
+            for(var i=0; i < index.view.length; i++) {
+            if(index.view[i] != element.attr('class')) {
+                $('.'+index.view[i]).hide();
+            }
+        }
+
+        }
+        
+    };
+    
+    index.checkvisible = function() {
+        for(var i=0; i < index.view - 1; i++) {
+            if($('.'+index.view[i]).is(':visible'))
+                return $('.'+index.view[i]);
+        }
+    
+    }
+
     index.init = function() {
         index.startButton.text('開機');
         index.shutdownButton.text('關機');
         index.deleteButton.text('刪除');
         index.forceoffButton.text('強制關機');
         index.VNCButton.text('VNC');
-        $('.wrap').hide();
-        $('.loading-list').show();
     };
     
     
@@ -34,12 +61,12 @@ var index = {
 				action: 'getVMList',
 				params: {
 					uid: user,
-                    isadmin: index.isadmin
 				}
 			}
 		});
 	};
 
+   
     index.stateControl = function (currstate, appendWith, uuid) {
     
         var shutdown = index.shutdownButton.clone().attr({value: uuid});
@@ -99,6 +126,41 @@ var index = {
     
     };
 
+    function vmlist() {
+        index.transshow('hide', $('.wrap'));
+        $('.wrap tbody tr').remove();
+        index.getVMList(index.uid).done(function (data) {
+        var isadmin = data.isadmin == '1'? true : false;
+        isadmin ? $('table .isadmin').show() : $('table .isadmin').hide();
+
+        delete data.isadmin;
+
+        $.map(data, function(value){ return [value];}).forEach(function (vm) {
+            var tr = $('<tr>').attr({id: vm.id});
+            var action  = $('<td>');
+            var action_td = $('<td>').attr({id: 'vmControl'});
+            var div = $('<div>');
+            if(vm.name != null) {
+                index.isadmin && tr.append($('<td id="uid">').text(vm.uid));
+                tr.append($('<td id="name">').text(vm.name));
+                isadmin && tr.append($('<td id="host">').text(vm.host));
+                tr.append($('<td id="vcpu">').text(vm.vcpu));
+                tr.append($('<td id="mem">').text(vm.mem));
+                tr.append($('<td id="disk">').text(vm.disk));
+                tr.append($('<td id="arch">').text(vm.arch));	
+                tr.append($('<td id="state">').append($('<div>').append(vm.state)));
+                tr.append(index.stateControl(vm.state, div, vm.uuid));
+                action_td.append(div);
+                tr.append(action_td);
+                $('.wrap tbody').append(tr);
+            }
+        });
+        index.transshow('show', $('.wrap'));
+    });
+
+    
+    }
+
 	$(function () {
         
         index.init();
@@ -113,36 +175,12 @@ var index = {
 			index.isadmin = data.isadmin === '1' ? true : false;
 		});
 		
-		index.getVMList(index.uid).done(function (data) {
-            $('.wrap').hide();
-            $('.loading-list').show();
-            index.isadmin ? $('table .isadmin').show() : $('table .isadmin').hide();
-			data.forEach(function (vm) {
-				var tr = $('<tr>');
-				var action  = $('<td>');
-                var action_td = $('<td>').attr({id: 'vmControl'});
-                var div = $('<div>');
-                if(vm.name != null) {
-                    index.isadmin && tr.append($('<td id="uid">').text(vm.uid));
-                    tr.append($('<td id="name">').text(vm.name));
-                    index.isadmin && tr.append($('<td id="host">').text(vm.host));
-                    tr.append($('<td id="vcpu">').text(vm.vcpu));
-                    tr.append($('<td id="mem">').text(vm.mem));
-                    tr.append($('<td id="disk">').text(vm.disk));
-                    tr.append($('<td id="arch">').text(vm.arch));	
-                    tr.append($('<td id="state">').append($('<div>').append(vm.state)));
-                    tr.append(index.stateControl(vm.state, div, vm.uuid));
-                    action_td.append(div);
-                    tr.append(action_td);
-                    $('.list tbody').append(tr);
-                }
-            });
-            $('.wrap').show();
-            $('.loading-list').hide();
+		vmlist();
 
+        $('#vmlist').click(function() {
+            vmlist();
+        });
 
-		});
-	    
         $('table').on('click', '.vmAction' ,function() {
             var action = $(this).attr('id');
             var uuid  = $(this).val();
@@ -180,8 +218,7 @@ var index = {
            
             });
         }); 
-
-
+        
 		$('#logout').click(function() {
 			index.logout().done(function(data){
 				if(data == 'success') {

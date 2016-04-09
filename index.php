@@ -21,6 +21,7 @@ if(!isset($_SESSION['uid'])) {
 		<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
 		<script type="text/javascript" src="js/create.js"></script>
+		<script type="text/javascript" src="js/pendinglist.js"></script>
 		<script  type="text/javascript" src="js/ie-emulation-modes-warning.js"></script>
         <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 </head>
@@ -35,7 +36,7 @@ if(!isset($_SESSION['uid'])) {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">虛擬機管理</a>
+      <a id="vmlist" class="navbar-brand" href="#">虛擬機管理</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -74,6 +75,25 @@ if(!isset($_SESSION['uid'])) {
             </tbody>
             </table>	
         </div>
+    </div>
+
+    <div class="pending">
+        <div class="list">
+            <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="isadmin">帳號</th>
+                    <th>虛擬機名稱</th>
+                    <th>CPU#</th>
+                    <th>記憶體</th>
+                    <th>模板</th>
+                    <th class="isadmin">主機</th>
+                    <th class="isadmin">核准</th>
+                </tr>	
+            </thead>
+            <tbody>
+            </tbody>
+            </table>	
     </div>
 </div>
 <div class='modal fade' id="create_modal" role="dialog">
