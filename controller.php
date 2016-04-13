@@ -253,7 +253,7 @@ class Controller {
                 if($msg == 'success') {
                     $waiting = $this->waitingCurrState($expectState, $this->libvirt[$host]->domain_is_running ? 'running' : 'shutoff', $domName, $host);
                     $msg = $waiting['msg'];
-                    $this->tokenfileControl('add',$token, $this->ips[$host].':'.$vnc);
+                    $this->tokenfileControl('delete',$token, $this->ips[$host].':'.$vnc);
                     $state = $waiting['state'];
                 }
 
