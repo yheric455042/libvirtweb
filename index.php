@@ -54,8 +54,13 @@ if(!isset($_SESSION['uid'])) {
     <div class="loading-list"></div>
 
     <div class="wrap">
-        <button id="create_vm" class="btn btn-info btn-lg" data-toggle="modal" data-target="#create_modal"><i class="icon-plus icon-white"></i></button>
-
+        <div>
+        <h3>虛擬機列表</h3>
+        <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#create_modal" style="font-size: 18px;">
+            <span class="glyphicons glyphicons-plus"></span>
+        </button>
+        </div>
+        <hr>
         <div class="list">
             <table class="table table-bordered">
             <thead>
@@ -78,6 +83,8 @@ if(!isset($_SESSION['uid'])) {
     </div>
 
     <div class="pending">
+        <h3>審核列表</h4>
+        <hr>
         <div class="list">
             <table class="table table-bordered">
             <thead>
@@ -94,6 +101,9 @@ if(!isset($_SESSION['uid'])) {
             <tbody>
             </tbody>
             </table>	
+    </div>
+    <div class="hostinfo">
+        
     </div>
 </div>
 <div class='modal fade' id="create_modal" role="dialog">

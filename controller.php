@@ -64,7 +64,7 @@ class Controller {
             $vnc = $this->libvirt[$vm['host']]->domain_get_vnc_port($res);
 			$disk = $this->libvirt[$vm['host']]->get_disk_capacity($res);
 			$token = $vm['host'].'-'.$uuid;
-            $this->libvirt[$vm['host']]->domain_is_running($name) && $this->tokenfileControl('add', $token, $this->ips[$vm['host']]);
+            $this->libvirt[$vm['host']]->domain_is_running($name) && $this->tokenfileControl('add', $token, $this->ips[$vm['host']].':'.$vnc);
 			array_push($outputs, array('uid'=>$vm['uid'], 'name'=>$vm['name'], 'vcpu'=>$cpu, 'mem'=>$vm['mem']."G", 'disk'=>$disk, 'arch'=>$arch ,'state'=>$state, 'uuid'=>$uuid, 'token'=>$token, 'host'=>$vm['host']));
 		}
         $outputs['isadmin'] = $userArray['isadmin'];
@@ -137,6 +137,7 @@ class Controller {
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
+        exec('ssh root@'.$this->ips[$host].' chown qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'qcow2');
         $xml = "
         <domain type='qemu'>
           <name>".$uid."-".$name."</name>
@@ -167,7 +168,7 @@ class Controller {
             <emulator>/usr/libexec/qemu-kvm</emulator>
             <disk type='file' device='disk'>
               <driver name='qemu' type='qcow2'/>
-              <source file='/var/lib/libvirt/images/".$this->templates[$template]."'/>
+              <source file='/var/lib/libvirt/images/".$uid."-".$name.".qcow2'/>
               <target dev='vda' bus='virtio'/>
             </disk>
             <controller type='usb' index='0' model='ich9-ehci1' />
@@ -192,6 +193,7 @@ class Controller {
             <video>
               <model type='vga' vram='16384' heads='1'/>
             </video>
+            <memballoon model='virtio' />
           </devices>
         </domain> 
         ";
@@ -319,7 +321,7 @@ class Controller {
             file_put_contents('token.list',$file);
 
         } else if($action == 'add' && $vnchost) {
-            file_put_contents('token.list', $token.': '.$vnchost,FILE_APPEND);
+            file_put_contents('token.list', $token.': '.$vnchost."\n",FILE_APPEND);
             
         }
     }

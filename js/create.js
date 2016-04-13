@@ -37,15 +37,12 @@
 
 
     $(function () {
-        plus = $('<i>').append({class: 'icon-plus icon-white'});
-        $('#create_vm').append(plus);
         if(!index.isadmin) {
             $('.isadmin').hide();
-
-            $('#create_vm').text('申請虛擬機');
+            $('#create_vm').append('申請虛擬機');
         } else {
             
-            $('#create_vm').text('添加虛擬機');
+            $('#create_vm').append('添加虛擬機');
             create.gethostCount().done(function(count) {
                  
                 for(var i=0; i<count;i++) {
