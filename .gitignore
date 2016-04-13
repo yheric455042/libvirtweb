@@ -1,0 +1,4 @@
+token.list
+*.swp
+websockify/*
+noVNC/*
