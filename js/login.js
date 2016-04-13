@@ -7,6 +7,7 @@
 		return $.ajax({
 			type: 'POST',
 			url: 'base.php',
+            async: false,
 			data: {
 				'action': 'login',
 				'params': {

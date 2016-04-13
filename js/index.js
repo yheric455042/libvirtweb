@@ -6,7 +6,7 @@ var index = {
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),
 		forceoffButton: $('<button>').attr({class: 'vmAction btn btn-warning' , id: 'forceoff'}),
-		VNCButton: $('<button>').attr({class: 'vmAction btn btn-warning' , id: 'VNC'}),
+		VNCButton: $('<button>').attr({class: 'btn btn-info vmAction', id: 'vnc'}),
 
 };
 
@@ -48,6 +48,7 @@ var index = {
         index.deleteButton.text('刪除');
         index.forceoffButton.text('強制關機');
         index.VNCButton.text('VNC');
+        index.isadmin ? $('#hostinfo').show() : $('#hostinfo').hide();
     };
     
     
@@ -67,18 +68,20 @@ var index = {
 	};
 
    
-    index.stateControl = function (currstate, appendWith, uuid) {
+    index.stateControl = function (currstate, appendWith, uuid, host) {
     
-        var shutdown = index.shutdownButton.clone().attr({value: uuid});
-        var start = index.startButton.clone().attr({value: uuid});
-        var del = index.deleteButton.clone().attr({value: uuid});
-        var forceoff = index.forceoffButton.clone().attr({value: uuid});
-        var vnc = index.VNCButton.clone().attr({value: uuid});
+        var shutdown = index.shutdownButton.clone().attr({value: uuid, host: host});
+        var start = index.startButton.clone().attr({value: uuid, host: host});
+        var del = index.deleteButton.clone().attr({value: uuid, host: host});
+        var forceoff = index.forceoffButton.clone().attr({value: uuid, host: host});
+        var vnc = index.VNCButton.clone().attr({value: uuid, host: host});
         
 	    
         if(currstate == 'running') {
             appendWith.append(shutdown);
             appendWith.append(forceoff);
+            appendWith.append(forceoff);
+            appendWith.append(vnc);
         } else {
             appendWith.append(start);
             appendWith.append(del);
@@ -149,7 +152,7 @@ var index = {
                 tr.append($('<td id="disk">').text(vm.disk));
                 tr.append($('<td id="arch">').text(vm.arch));	
                 tr.append($('<td id="state">').append($('<div>').append(vm.state)));
-                tr.append(index.stateControl(vm.state, div, vm.uuid));
+                tr.append(index.stateControl(vm.state, div, vm.uuid, vm.host));
                 action_td.append(div);
                 tr.append(action_td);
                 $('.wrap tbody').append(tr);
@@ -163,7 +166,6 @@ var index = {
 
 	$(function () {
         
-        index.init();
         
 		index.getCurrentUid().done(function (data) {
 			var li = $('#uid');
@@ -175,6 +177,7 @@ var index = {
 			index.isadmin = data.isadmin === '1' ? true : false;
 		});
 		
+        index.init();
 		vmlist();
 
         $('#vmlist').click(function() {
@@ -188,35 +191,43 @@ var index = {
             var loading_action = $('<div>').attr({class: 'loading-action'});
             var action_td = $(this).closest('td');
             var curr_tr = $(this).closest('tr');
+            var host = $(this).attr('host');
 
-            curr_tr.find('#vmControl div').replaceWith(loading_action.clone());
-            curr_tr.find('#state div').replaceWith(loading_action.clone());
-            
-            index.vmcontrol(action, uuid, 0).done(function (data) {
+            if(action == 'vnc') {
+               var token = $(this).attr('host')+'-'+$(this).val();
 
-                if(data.msg == 'success') {
-                
-                curr_tr.find('#vmControl div').replaceWith(index.stateControl(data.state, $('<div>'), uuid));
-                curr_tr.find('#state div').replaceWith($('<div>').append(data.state)); 
+               window.open('http://'+document.domain+':6080/vnc_auto.html?token='+token);
+               console.dir(document.domain+':6080/vnc_auto.html?token='+token);
 
+            } else {
+                curr_tr.find('#vmControl div').replaceWith(loading_action.clone());
+                curr_tr.find('#state div').replaceWith(loading_action.clone());
+                index.vmcontrol(action, uuid, host).done(function (data) {
 
-                } else if(data.msg == 'success_delete') {
-                    //init view
-                    $('.wrap').hide();
-                    $('.loading-list').show();
+                    if(data.msg == 'success') {
                     
-                    curr_tr.remove();
+                    curr_tr.find('#vmControl div').replaceWith(index.stateControl(data.state, $('<div>'), uuid, host));
+                    curr_tr.find('#state div').replaceWith($('<div>').append(data.state)); 
 
-                    $('.wrap').show();
-                    $('.loading-list').hide();
 
-                } else {
-                    alert('error');
-                    window.location.href = './index.php';
+                    } else if(data.msg == 'success_delete') {
+                        //init view
+                        $('.wrap').hide();
+                        $('.loading-list').show();
+                        
+                        curr_tr.remove();
 
-                }
-           
-            });
+                        $('.wrap').show();
+                        $('.loading-list').hide();
+
+                    } else {
+                        alert('error');
+                        window.location.href = './index.php';
+
+                    }
+               
+                });
+            }
         }); 
         
 		$('#logout').click(function() {

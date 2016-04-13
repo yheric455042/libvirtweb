@@ -51,6 +51,8 @@ class Controller {
         $where = $userArray['isadmin'] == '1' ? "1" : "uid = '$uid'";
 		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where");
         $outputs = array();
+
+        file_put_contents('token.list', '');
 	    foreach($vms as $vm) {
 			$name = $vm['uid']."-".$vm['name'];
             $res = $this->libvirt[$vm['host']]->get_domain_by_name($name);
@@ -61,7 +63,8 @@ class Controller {
             $state = $this->libvirt[$vm['host']]->domain_state_translate($dom['state']);
             $vnc = $this->libvirt[$vm['host']]->domain_get_vnc_port($res);
 			$disk = $this->libvirt[$vm['host']]->get_disk_capacity($res);
-			$token = 'test';//demo test
+			$token = $vm['host'].'-'.$uuid;
+            $this->libvirt[$vm['host']]->domain_is_running($name) && $this->tokenfileControl('add', $token, $this->ips[$vm['host']]);
 			array_push($outputs, array('uid'=>$vm['uid'], 'name'=>$vm['name'], 'vcpu'=>$cpu, 'mem'=>$vm['mem']."G", 'disk'=>$disk, 'arch'=>$arch ,'state'=>$state, 'uuid'=>$uuid, 'token'=>$token, 'host'=>$vm['host']));
 		}
         $outputs['isadmin'] = $userArray['isadmin'];
@@ -69,15 +72,51 @@ class Controller {
 	}
 
     public function pendingCreate($params) {
-        $name = $params['name'];    
+        $name = $params['name'];
         $isadmin = $params['isadmin'];
         $uid = $params['uid'];    
         $vcpu = $params['vcpu'];    
-        $mem = $params['mem'];    
+        $mem = $params['mem'];
         $template = $params['template'];    
         $host = $params['host'];
 
-        if($isadmin == 'true') {
+
+        if(isset($params['id'])) {
+            
+            $id = $params['id'];
+            $value = $params['value'];
+
+            if($value == 'cancel') {
+                $result = $this->SQLClass->delete("DELETE FROM pending_list WHERE id=$id") ? 'success' : 'error';
+                 
+                return $result;
+
+            } else if($value == 'submit') {
+                $arr = $this->SQLClass->select("SELECT * FROM pending_list WHERE id=$id");
+
+                foreach($arr as $user_data) {
+                    $uid = $user_data['uid'];
+                    $name = $user_data['name'];
+                    $vcpu = $user_data['vcpu'];
+                    $mem = $user_data['mem'];
+                    $template = $user_data['template'];
+                }
+                
+                $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES('$uid','$name',$host, $mem )";
+
+                if($this->SQLClass->insert($sql)) {
+
+                    $this->createVM($host, $vcpu, $mem, $template, $uid, $name);
+                    $result = $this->SQLClass->delete("DELETE FROM pending_list WHERE id=$id") ? 'success' : 'error';
+                 
+                    return $result;
+
+                }
+
+            }
+
+
+        } else if($isadmin == 'true') {
             $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES('$uid','$name',$host, $mem)";
 
             if($this->SQLClass->insert($sql)) {
@@ -93,7 +132,7 @@ class Controller {
                 return 'error';
             }
         }
-    }  
+    } 
 
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
@@ -191,18 +230,19 @@ class Controller {
         $action = $params['action'];
         $expectState = $action == 'start' ? 'running' : 'shutoff';
         $domName = $this->libvirt[$host]->domain_get_name_by_uuid($params['uuid']);
-        $uidANDname = split($domName, "-");
-        $uid = $uidANDname[0];
-        $name = $uidANDname[1];
+        $token = $host.'-'.$params['uuid'];
         $res = $this->libvirt[$host]->get_domain_by_name($domName);
+        
 
         switch($action) {
             case 'start':
                 $msg = $this->libvirt[$host]->domain_start($domName) ? 'success' : 'error';
-                
                 if($msg == 'success') {
                     $waiting = $this->waitingCurrState($expectState, $this->libvirt[$host]->domain_is_running ? 'running' : 'shutoff', $domName, $host);
                     $msg = $waiting['msg'];
+
+                    $vnc = $this->libvirt[$host]->domain_get_vnc_port($res);
+                    $this->tokenfileControl('add',$token, $this->ips[$host].':'.$vnc);
                     $state = $waiting['state'];
                 }
                 break;
@@ -213,6 +253,7 @@ class Controller {
                 if($msg == 'success') {
                     $waiting = $this->waitingCurrState($expectState, $this->libvirt[$host]->domain_is_running ? 'running' : 'shutoff', $domName, $host);
                     $msg = $waiting['msg'];
+                    $this->tokenfileControl('add',$token, $this->ips[$host].':'.$vnc);
                     $state = $waiting['state'];
                 }
 
@@ -222,8 +263,9 @@ class Controller {
                 $msg = $this->libvirt[$host]->domain_destroy($domName) ? 'success' : 'error';
                 
                 if($msg == 'success') {
-                    $waiting = $this->waitingCurrState($expectState, $this->libvirt[$host]->domain_is_running ? 'running' : 'shutoff', $domName, $host);
+                    $waiting = $this->waitingCurrState($expectState, $this->libvirt[$host]->domain_is_running($domName) ? 'running' : 'shutoff', $domName, $host);
                     $msg = $waiting['msg'];
+                    $this->tokenfileControl('delete',$token);
                     $state = $waiting['state'];
                 }
 
@@ -231,11 +273,16 @@ class Controller {
 
             case 'delete':
                 if(!$this->libvirt[$host]->domain_is_running($domName)) {
+
+                    $uidANDname = explode("-", $domName);
+                    $uid = $uidANDname[0];
+                    $name = $uidANDname[1];
                     $state = $this->libvirt[$host]->domain_undefine($domName);
 
                     if($state) {
                         exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$domName.'.qcow2');
-                        $this->SQLClass->delete("DELETE FROM vmlist WHERE uid='$uid' AND name='$name'"); 
+                        $this->SQLClass->delete("DELETE FROM vmlist WHERE uid='$uid' AND name='$name'");
+                        $this->tokenfileControl('delete',$token);
                         $msg = 'success_delete';
 
                     } else {
@@ -254,8 +301,31 @@ class Controller {
 
     }
     
+    private function tokenfileControl($action, $token, $vnchost=false) {
+        $tokenarr = explode("\n", file_get_contents('token.list',false));
+        unset($tokenarr[count($tokenarr) - 1]);
+
+        if($action == 'delete') {
+
+            for($i=0; $i < count($tokenarr); $i++) {
+                $key = explode(":", $tokenarr[$i]);
+                if($key[0] == $token) {
+                    unset($tokenarr[$i]);
+                    break;
+                }
+            }
+            
+            $file = implode("\n", $tokenarr);
+            file_put_contents('token.list',$file);
+
+        } else if($action == 'add' && $vnchost) {
+            file_put_contents('token.list', $token.': '.$vnchost,FILE_APPEND);
+            
+        }
+    }
+
     private function waitingCurrState($expectState, $currState, $domName, $host) {
-        $currState = $this->libvirt[$host]->domain_is_running ? 'running' : 'shutoff';
+        $currState = $this->libvirt[$host]->domain_is_running($domName) ? 'running' : 'shutoff';
         $time = time();
 
         while($currState != $expectState) {
@@ -275,10 +345,4 @@ class Controller {
 
 
 }
-
-
-
-
-
-
 ?>

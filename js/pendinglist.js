@@ -24,15 +24,26 @@
     
     };
 
-    list.sendRequest = function() {
-        
+    list.sendRequest = function(id, value, host) {
+        return $.ajax({
+            type: 'POST',
+            url: 'base.php',
+            data: {
+                action: 'userVMCreate',
+                params: {
+                    id: id,
+                    value: value,
+                    host: host
+                }
+            }
+        });
     
     };
     
 
     btnGroup = function(id) {
-        var okbtn = $('<button>').attr({class: 'btn btn-success pendingAction', id: id});
-        var cancelbtn = $('<button>').attr({class: 'btn btn-danger pendingAction', id: id});
+        var okbtn = $('<button>').attr({class: 'btn btn-success pendingAction', id: id, value: 'submit'});
+        var cancelbtn = $('<button>').attr({class: 'btn btn-danger pendingAction', id: id, value: 'cancel'});
         var div = $('<div>');
         okbtn.text('確認');
         cancelbtn.text('取消');
@@ -46,8 +57,6 @@
 
     $(function() {
         var hostcount;
-        
-
 
         list.gethostCount().done(function (data){
             hostcount = data; 
@@ -76,8 +85,8 @@
                     tr.append($('<td>').text(list.vcpu));
                     tr.append($('<td>').text(list.mem + 'GB'));
                     tr.append($('<td align="center">').text(list.template));
-                    tr.append($('<td>').append(select));
-                    tr.append($('<td>').append(btnGroup(list.id)));
+                    isadmin && tr.append($('<td>').append(select));
+                    isadmin && tr.append($('<td>').append(btnGroup(list.id)));
                     $('.pending tbody').append(tr); 
                 
                 });
@@ -85,7 +94,23 @@
             });
        
         }); 
+        
+        $('table').on('click', '.pendingAction', function() {
+            var id = $(this).attr('id');
+            var value = $(this).val();
+            var host = $(this).closest('tr').find('select').val();
+            var loading_action = $('<div>').attr({class: 'loading-action'});
+            var tr = $(this).closest('tr');
+            $(this).closest('div').replaceWith(loading_action.clone());
 
+            
+            list.sendRequest(id, value, host).done(function(result) {
+                tr.remove();
+            }); 
+            
+
+
+        });
 
     });
 })(jQuery);
