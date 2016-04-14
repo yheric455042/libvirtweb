@@ -153,7 +153,7 @@ if(!isset($_SESSION['uid'])) {
             </div>
                 
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" value="create_submit">提交</button>
+                <button type="button" class="btn btn-default submit" data-dismiss="modal" value="create_submit">提交</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
             </div>
 

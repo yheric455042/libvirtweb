@@ -138,7 +138,6 @@ class Controller {
         $uid = $params['uid'];
         
         $userVMs = $this->SQLClass->select("SELECT name FROM vmlist WHERE uid='$uid'");
-        file_put_contents('vms.txt',print_r($userVMs,true)); 
         return $userVMs;
     }
 

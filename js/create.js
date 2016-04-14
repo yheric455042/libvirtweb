@@ -54,6 +54,7 @@
     
     function resetInput(elementArray) {
         $.each(elementArray ,function(index, element) {
+            
             element.is('select') ? element.find('option').first().attr({'selected': true}) : element.val(""); 
 
         });
@@ -114,10 +115,12 @@
                 var name = $(this).val();
                 var input = $(this);
                 var checked = false;
+                
                 $.each(data, function(index, value) {
                     if(name == value.name || name == '') {
                         input.addClass('error');
                         $('.submit').attr({'disabled': true});
+                        return false;
                     } else {
                         input.removeClass('error');
                         $('.submit').attr({'disabled': false});

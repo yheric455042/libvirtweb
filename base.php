@@ -49,6 +49,11 @@ switch ($_POST['action']) {
         echo $controller->pendingCreate($_POST['params']);
         break;
 
+    case 'getAllvmName':
+        echo json_encode($controller->getAllvmName($_POST['params']));
+        break;
+
+
 }
 
 ?>
