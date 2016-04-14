@@ -41,3 +41,7 @@ body {
 h3 {
     display: inline;
 }
+
+.error {
+    border:1px solid red;
+}

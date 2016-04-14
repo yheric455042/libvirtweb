@@ -133,11 +133,19 @@ class Controller {
             }
         }
     } 
+    
+    public function getAllvmName($params) {
+        $uid = $params['uid'];
+        
+        $userVMs = $this->SQLClass->select("SELECT name FROM vmlist WHERE uid='$uid'");
+        file_put_contents('vms.txt',print_r($userVMs,true)); 
+        return $userVMs;
+    }
 
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
-        exec('ssh root@'.$this->ips[$host].' chown qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'qcow2');
+        exec('ssh root@'.$this->ips[$host].' chown -R qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'qcow2');
         $xml = "
         <domain type='qemu'>
           <name>".$uid."-".$name."</name>
