@@ -53,6 +53,11 @@ switch ($_POST['action']) {
         echo json_encode($controller->getAllvmName($_POST['params']));
         break;
 
+    case 'userList':
+        echo json_encode($controller->getuserList());
+        break;
+
+
 
 }
 

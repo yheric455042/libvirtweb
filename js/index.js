@@ -1,7 +1,7 @@
 var index = {
 		uid: '',
 		isadmin: '',
-        view: ['wrap', 'pending'],
+        view: ['wrap', 'pending', 'userinfo'],
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),
@@ -49,6 +49,7 @@ var index = {
         index.forceoffButton.text('強制關機');
         index.VNCButton.text('VNC');
         index.isadmin ? $('#hostinfo').show() : $('#hostinfo').hide();
+        index.isadmin ? $('#userinfo').show() : $('#userinfo').hide();
     };
     
     

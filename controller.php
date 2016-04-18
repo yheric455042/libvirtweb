@@ -141,6 +141,19 @@ class Controller {
         return $userVMs;
     }
 
+    public function getuserList() {
+        $userArray = $this->getUser();
+        $isadmin = $userArray['isadmin'] == '1' ? true : false;
+        
+        if($isadmin) {
+            $users = $this->SQLClass->select("SELECT uid, displayname, email FROM user");
+
+            return $users;
+        }
+
+        return 'notadmin';
+    }
+
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
@@ -229,6 +242,8 @@ class Controller {
     
         return $list;
     }
+
+
     
 
     //$host is string that it is ip address

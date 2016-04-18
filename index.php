@@ -22,6 +22,7 @@ if(!isset($_SESSION['uid'])) {
 		<script type="text/javascript" src="js/index.js"></script>
 		<script type="text/javascript" src="js/create.js"></script>
 		<script type="text/javascript" src="js/pendinglist.js"></script>
+		<script type="text/javascript" src="js/userinfo.js"></script>
 		<script  type="text/javascript" src="js/ie-emulation-modes-warning.js"></script>
         <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 </head>
@@ -41,7 +42,8 @@ if(!isset($_SESSION['uid'])) {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li id="pendinglist"><a href="#pendinglist">審核列表</a></li>
-        <li id="hostinfo"><a href="#hostinfo">主機資訊</a></li>
+        <li id="hostinfo" class="isadmin"><a href="#hostinfo">主機資訊</a></li>
+        <li id="userinfo" class="isadmin"><a href="#userinfo">使用者列表</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li id="uid"></li>
@@ -56,7 +58,7 @@ if(!isset($_SESSION['uid'])) {
     <div class="wrap">
         <div>
         <h3>虛擬機列表</h3>
-        <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#create_modal" style="font-size: 18px;">
+        <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#create_modal" style="font-size: 18px;"></button>
             <span class="glyphicons glyphicons-plus"></span>
         </button>
         </div>
@@ -101,9 +103,28 @@ if(!isset($_SESSION['uid'])) {
             <tbody>
             </tbody>
             </table>	
+        </div>
     </div>
+
     <div class="hostinfo">
         
+    </div>
+
+    <div class="userinfo">
+        <h3>使用者列表</h3>
+        <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#user_modal" style="font-size: 18px;">創建使用者</button>
+        <hr>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>帳號</th>
+                    <th>使用者名稱</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </div>
 </div>
 <div class='modal fade' id="create_modal" role="dialog">
@@ -153,12 +174,52 @@ if(!isset($_SESSION['uid'])) {
             </div>
                 
             <div class="modal-footer">
-                <button type="button" class="btn btn-default submit" data-dismiss="modal" value="create_submit">提交</button>
+                <button type="button" class="btn btn-default create_submit" data-dismiss="modal" value="create_submit">提交</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
             </div>
 
         </div>
     </div>
 </div>
+
+<div class='modal fade' id="user_modal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">創建使用者</h4>
+            </div>
+            
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="Inputaccount">使用者帳號</label>
+                    <input type="text" id="Inputuid" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label  for="Inputmem">使用者名稱</label>
+                    <input type="text" id="Inputdisplayname" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label for="Inputpassword">密碼</label>
+                    <input type="password" id="Inputpassword" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="Inputemail">Email</label>
+                    <input type="email" id="Inputemail" class="form-control">
+                </div>
+                
+            </div>
+                
+            <div class="modal-footer">
+                <button type="button" class="user-btn btn btn-default user_submit" data-dismiss="modal" value="user_submit">提交</button>
+                <button type="button" class="user-btn btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

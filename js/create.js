@@ -1,3 +1,12 @@
+function reset (elementArray) {
+    $.each(elementArray ,function(index, element) {
+        
+        element.is('select') ? element.find('option').first().attr({'selected': true}) : element.val(""); 
+
+    });
+
+}
+
 (function($) {
     var create = {
         userVms: ''
@@ -53,15 +62,9 @@
     };
     
     function resetInput(elementArray) {
-        $.each(elementArray ,function(index, element) {
-            
-            element.is('select') ? element.find('option').first().attr({'selected': true}) : element.val(""); 
-
-        });
+        reset(elementArray);
         $('#Inputname').removeClass('error');
         $('.submit').attr({'disabled': true});
-        
-
     };
 
     $(function () {
@@ -119,11 +122,11 @@
                 $.each(data, function(index, value) {
                     if(name == value.name || name == '') {
                         input.addClass('error');
-                        $('.submit').attr({'disabled': true});
+                        $('.create_submit').attr({'disabled': true});
                         return false;
                     } else {
                         input.removeClass('error');
-                        $('.submit').attr({'disabled': false});
+                        $('.create_submit').attr({'disabled': false});
                     }
                 });
 
