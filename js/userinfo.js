@@ -54,8 +54,23 @@
                     var password = $('#Inputpassword').val();
                     var email = $('#Inputemail').val();
 
-                    user.Createuser(uid, password, displayname, email).done(function() {
-                    
+                    user.Createuser(uid, password, displayname, email).done(function(status) {
+
+                        if(status == 'error') {
+                            alert('error');
+
+                        } else {
+                            var tr = $('<tr>');
+
+                            tr.append($('<td>').append(uid));
+                            tr.append($('<td>').append(displayname));
+                            tr.append($('<td>').append(email));
+                            
+                            $('.userinfo tbody').append(tr);
+                            
+                            alert('success');
+                        }
+
                     });
                 
                 }
@@ -86,6 +101,7 @@
                 index.transshow('show', $('.userinfo'));
             });
         });
+
     
     });
 

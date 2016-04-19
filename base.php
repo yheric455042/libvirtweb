@@ -57,6 +57,10 @@ switch ($_POST['action']) {
         echo json_encode($controller->getuserList());
         break;
 
+    case 'userCreate':
+        echo $controller->userCreate($_POST['params']);
+        break;
+
 
 
 }

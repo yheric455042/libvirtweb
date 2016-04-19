@@ -52,6 +52,7 @@ if(!isset($_SESSION['uid'])) {
     </div><!--/.nav-collapse -->
   </div>
 </nav>
+
 <div class="container">
     <div class="loading-list"></div>
 

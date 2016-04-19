@@ -154,6 +154,24 @@ class Controller {
         return 'notadmin';
     }
 
+    public function userCreate($params) {
+        $uid = $params['uid'];
+        $password = $params['password'];
+        $displayname = $params['displayname'];
+        $email = $params['email'];
+        $user = $this->getUser();
+        $isadmin = $user[1] == '1' ? true :false;
+
+        $sql = "INSERT INTO user (uid, password, displayname, email) VALUES('$uid', '$password', '$displayname', '$email')";
+
+        if($this->SQLClass->insert($sql)) {
+            return 'success';
+        }
+        
+        return 'error';
+
+    }
+
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
