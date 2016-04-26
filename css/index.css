@@ -42,6 +42,22 @@ h3 {
     display: inline;
 }
 
+small {
+    color: red;
+}
 .error {
     border:1px solid red;
+}
+
+#Progress {
+  position: relative;
+  width: 100%;
+  height: 30px;
+  background-color: #BEBEBE;
+}
+
+#Bar {
+  position: absolute;
+  height: 100%;
+  background-color: #66B3FF;
 }

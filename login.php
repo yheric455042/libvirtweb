@@ -10,7 +10,8 @@
 		<title>虛擬機管理</title>
 		<link type="text/css" rel="stylesheet" href="bootstrap/css/bootstrap.css"/>
 		<link type="text/css" rel="stylesheet" href="css/login.css"/>
-		<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+		<script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="js/login.js"></script>
 </head>
 <body>
@@ -24,7 +25,7 @@
                 <label for="passwd">密碼:</label>
                 <input type="password" id="passwd" class="form-control" placeholder="Please input your password"/>
             </div>
-            <button id="login-submit" class="btn btn-primary">提交</button>
+            <button id="login-submit" class="btn btn-primary" data-loading-text="<i class='fa fa-circle-o-notch fa-spin'></i> 登入中">提交</button>
         </div>
     </form>
 </body>

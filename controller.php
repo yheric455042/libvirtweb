@@ -160,16 +160,44 @@ class Controller {
         $displayname = $params['displayname'];
         $email = $params['email'];
         $user = $this->getUser();
-        $isadmin = $user[1] == '1' ? true :false;
-
-        $sql = "INSERT INTO user (uid, password, displayname, email) VALUES('$uid', '$password', '$displayname', '$email')";
-
-        if($this->SQLClass->insert($sql)) {
+        $isadmin = $user['isadmin'] == '1' ? true :false;
+        
+        $sql = "INSERT INTO user (uid, passwd, displayname, email) VALUES('$uid', '$password', '$displayname', '$email')";
+        $status = $isadmin ? $this->SQLClass->insert($sql) : false;
+        if($status) {
             return 'success';
         }
         
         return 'error';
 
+    }
+
+    public function hostInfo() {
+                
+        $sql = "SELECT host,uid,name, mem FROM vmlist";
+        $vms = $this->SQLClass->select($sql);
+        $vcpu_used = 0;
+        $mem_used = 0;
+
+
+        $host = array();
+
+        for($i= 0; $i < count($this->ips); $i++) {
+            $info = $this->libvirt[$i]->get_connect_information();
+            $node = $this->libvirt[$i]->host_get_node_info();
+
+            $host[$i] = ['vcpu_max' => $info['hypervisor_maxvcpus'], 'mem_max' => number_format($node['memory']/1048576, 2 , '.', ' ') - 0.5, 'vcpu_used' => 0, 'mem_used' => 0];
+        }
+        
+        foreach($vms as $vm) {
+            $name = $vm['uid']."-".$vm['name'];
+            $res = $this->libvirt[$vm['host']]->get_domain_by_name($name);
+            $dom = $this->libvirt[$vm['host']]->domain_get_info($res);
+            $host[$vm['host']]['vcpu_used'] += (int) $dom['nrVirtCpu'];
+            $host[$vm['host']]['mem_used'] += (int) $vm['mem'];
+        }
+
+        return $host;
     }
 
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {

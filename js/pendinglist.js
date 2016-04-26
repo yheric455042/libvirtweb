@@ -80,8 +80,8 @@
                         select.append('<option value="'+i+'">'+(i+1)+'</option>');
                     }
 
-                    isadmin && tr.append($('<td>').text(list.uid));
-                    tr.append($('<td>').text(list.name));
+                    isadmin && tr.append($('<td id="uid">').text(list.uid));
+                    tr.append($('<td id="name">').text(list.name));
                     tr.append($('<td>').text(list.vcpu));
                     tr.append($('<td>').text(list.mem + 'GB'));
                     tr.append($('<td align="center">').text(list.template));
@@ -96,6 +96,8 @@
         }); 
         
         $('table').on('click', '.pendingAction', function() {
+            var uid = $(this).closest('tr').find('#uid').text();
+            var name = $(this).closest('tr').find('#name').text();
             var id = $(this).attr('id');
             var value = $(this).val();
             var host = $(this).closest('tr').find('select').val();
@@ -105,6 +107,9 @@
 
             
             list.sendRequest(id, value, host).done(function(result) {
+                msg = value == "submit" ? uid+'的虛擬機器'+name+'已經創見成功' : '請求已經取消';
+                toastr['success'](msg,'成功');
+
                 tr.remove();
             }); 
             

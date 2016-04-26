@@ -61,6 +61,9 @@ switch ($_POST['action']) {
         echo $controller->userCreate($_POST['params']);
         break;
 
+    case 'hostInfo':
+        echo json_encode($controller->hostInfo());
+        break;
 
 
 }

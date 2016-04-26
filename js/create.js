@@ -38,8 +38,8 @@ function reset (elementArray) {
         return $.ajax({
             type: 'POST',
             url: 'base.php',
-            async: false,
             dataType: 'json',
+            async: false,
             data: {
                 action: 'getAllvmName',
                 params: {
@@ -64,7 +64,7 @@ function reset (elementArray) {
     function resetInput(elementArray) {
         reset(elementArray);
         $('#Inputname').removeClass('error');
-        $('.submit').attr({'disabled': true});
+        $('.create_submit').attr({'disabled': true});
     };
 
     $(function () {
@@ -99,29 +99,33 @@ function reset (elementArray) {
                     var host = $('#Inputhost').val();
 
                     create.sendData(name, vcpu, mem, template, host).done(function (data) {
-                       
-                        resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
+                        toastr['success']('創建虛擬機器成功','成功');
+                        resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]);
+                        if(index.isadmin) {
+                            window.location.href = './index.php';
+                        }
                     });
-                
-                } else if(button.val() == 'cancel') {
-                    resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
+
+                    
                     
                 }
+                 
             });
 
-            $('.close').click(function() {
-                
+            $('.create_close').click(function() {
+                $('.form-group').find('small').remove();
                 resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
             });
 
             $('#Inputname').keyup(function() {
                 var name = $(this).val();
                 var input = $(this);
-                var checked = false;
-                
+                input.closest('div').find('small').remove();
+                !data.length && name != '' && $('.create_submit').attr({'disabled': false});
                 $.each(data, function(index, value) {
                     if(name == value.name || name == '') {
                         input.addClass('error');
+                        input.after($('<small>').text('虛擬機器名稱已重複'));
                         $('.create_submit').attr({'disabled': true});
                         return false;
                     } else {
@@ -133,9 +137,6 @@ function reset (elementArray) {
             });
 
         });
-
-       
-        
 
     });
 

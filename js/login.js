@@ -22,11 +22,14 @@
 
 	$(function () {
 
-		$('.login-page #login-submit').click(function () {
+		$('.login-page #login-submit').on('click', function () {
+            var btn = $(this);
+            //btn.button('loading');
 			page.login($('.login-page #uid').val(), $('.login-page #passwd').val()).done(function (data) {
 				if(data != 'error') {
 					window.location.href = './index.php';
 				}
+                //btn.button('reset');
 			});	
 		});
 

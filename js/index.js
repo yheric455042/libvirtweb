@@ -1,7 +1,8 @@
+
 var index = {
 		uid: '',
 		isadmin: '',
-        view: ['wrap', 'pending', 'userinfo'],
+        view: ['wrap', 'pending', 'userinfo', 'hostinfo'],
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),
@@ -9,6 +10,26 @@ var index = {
 		VNCButton: $('<button>').attr({class: 'btn btn-info vmAction', id: 'vnc'}),
 
 };
+
+index.setting = {
+      "closeButton": false,
+      "debug": false,
+      "newestOnTop": false,
+      "progressBar": false,
+      "positionClass": "toast-top-right",
+      "preventDuplicates": false,
+      "onclick": null,
+      "showDuration": "300",
+      "hideDuration": "1500",
+      "timeOut": "2000",
+      "extendedTimeOut": "1000",
+      "showEasing": "swing",
+      "hideEasing": "linear",
+      "showMethod": "fadeIn",
+      "hideMethod": "fadeOut"
+}
+
+toastr.options = index.setting;
 
 
 (function ($) {
@@ -95,7 +116,6 @@ var index = {
 		return $.ajax({
 			type: 'POST',
 			url: 'base.php',
-			async: false,
 			data: {action: 'logout'}
 		});
 	};
@@ -198,7 +218,6 @@ var index = {
                var token = $(this).attr('host')+'-'+$(this).val();
 
                window.open('http://'+document.domain+':6080/vnc_auto.html?token='+token);
-               console.dir(document.domain+':6080/vnc_auto.html?token='+token);
 
             } else {
                 curr_tr.find('#vmControl div').replaceWith(loading_action.clone());
@@ -206,13 +225,14 @@ var index = {
                 index.vmcontrol(action, uuid, host).done(function (data) {
 
                     if(data.msg == 'success') {
-                    
+                    toastr['success']('操作成功','成功');
                     curr_tr.find('#vmControl div').replaceWith(index.stateControl(data.state, $('<div>'), uuid, host));
                     curr_tr.find('#state div').replaceWith($('<div>').append(data.state)); 
 
 
                     } else if(data.msg == 'success_delete') {
                         //init view
+                        toastr['success']('刪除成功','成功');
                         $('.wrap').hide();
                         $('.loading-list').show();
                         
@@ -222,7 +242,7 @@ var index = {
                         $('.loading-list').hide();
 
                     } else {
-                        alert('error');
+                        toastr['error']('操作錯誤','錯誤');
                         window.location.href = './index.php';
 
                     }

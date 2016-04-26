@@ -16,15 +16,16 @@ if(!isset($_SESSION['uid'])) {
 		<meta name="description" content="">
         <meta name="author" content="">
         <link type="text/css" rel="stylesheet" href="bootstrap/css/bootstrap.min.css"/>
+        <link href="css/toastr.css" rel="stylesheet" type="text/css" />
 		<link type="text/css" rel="stylesheet" href="css/index.css"/>
-        <link href="css/ie10-viewport-bug-workaround.css" rel="stylesheet">
-		<script type="text/javascript" src="js/jquery-1.12.2.js"></script>
+		<script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+        <script src="js/toastr.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
 		<script type="text/javascript" src="js/create.js"></script>
 		<script type="text/javascript" src="js/pendinglist.js"></script>
 		<script type="text/javascript" src="js/userinfo.js"></script>
-		<script  type="text/javascript" src="js/ie-emulation-modes-warning.js"></script>
-        <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
+		<script type="text/javascript" src="js/hostinfo.js"></script>
 </head>
 <body>
 
@@ -133,7 +134,7 @@ if(!isset($_SESSION['uid'])) {
         <div class="modal-content">
 
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close create_close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">創建虛擬機</h4>
             </div>
             
@@ -176,7 +177,7 @@ if(!isset($_SESSION['uid'])) {
                 
             <div class="modal-footer">
                 <button type="button" class="btn btn-default create_submit" data-dismiss="modal" value="create_submit">提交</button>
-                <button type="button" class="btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
+                <button type="button" class="btn btn-default create_close" data-dismiss="modal" value="cancel">關閉</button>
             </div>
 
         </div>
@@ -188,17 +189,17 @@ if(!isset($_SESSION['uid'])) {
         <div class="modal-content">
 
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close user_close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">創建使用者</h4>
             </div>
             
             <div class="modal-body">
                 <div class="form-group">
-                    <label for="Inputaccount">使用者帳號</label>
+                    <label for="Inputuid">使用者帳號</label>
                     <input type="text" id="Inputuid" class="form-control">
                 </div>
                 <div class="form-group">
-                    <label  for="Inputmem">使用者名稱</label>
+                    <label  for="Inputdisplayname">使用者名稱</label>
                     <input type="text" id="Inputdisplayname" class="form-control">
                 </div>
 
@@ -215,7 +216,7 @@ if(!isset($_SESSION['uid'])) {
                 
             <div class="modal-footer">
                 <button type="button" class="user-btn btn btn-default user_submit" data-dismiss="modal" value="user_submit">提交</button>
-                <button type="button" class="user-btn btn btn-default" data-dismiss="modal" value="cancel">關閉</button>
+                <button type="button" class="user-btn btn btn-default user_close" data-dismiss="modal" value="cancel">關閉</button>
             </div>
 
         </div>
