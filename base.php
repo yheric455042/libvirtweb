@@ -42,7 +42,7 @@ switch ($_POST['action']) {
         break;
 
     case 'pendingList':
-        echo json_encode($controller->getpendingList($_POST['params']));
+        echo json_encode($controller->getpendingList());
         break;
 
     case 'userVMCreate':
@@ -64,6 +64,11 @@ switch ($_POST['action']) {
     case 'hostInfo':
         echo json_encode($controller->hostInfo());
         break;
+
+    case 'modifyPassword':
+        echo $controller->modifyPassword($_POST['params']);
+        break;
+
 
 
 }

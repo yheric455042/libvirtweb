@@ -86,7 +86,7 @@
                     tr.append($('<td>').text(list.mem + 'GB'));
                     tr.append($('<td align="center">').text(list.template));
                     isadmin && tr.append($('<td>').append(select));
-                    isadmin && tr.append($('<td>').append(btnGroup(list.id)));
+                    list.status != '1' ? isadmin && tr.append($('<td>').append(btnGroup(list.id))) : isadmin && tr.append($('<td>').append($('<div>').addClass('loading-action')));
                     $('.pending tbody').append(tr); 
                 
                 });
@@ -113,8 +113,6 @@
                 tr.remove();
             }); 
             
-
-
         });
 
     });

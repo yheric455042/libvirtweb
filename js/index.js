@@ -2,7 +2,7 @@
 var index = {
 		uid: '',
 		isadmin: '',
-        view: ['wrap', 'pending', 'userinfo', 'hostinfo'],
+        view: ['wrap', 'pending', 'userinfo', 'hostinfo', 'modifyPassword'],
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),
@@ -155,7 +155,7 @@ toastr.options = index.setting;
         $('.wrap tbody tr').remove();
         index.getVMList(index.uid).done(function (data) {
         var isadmin = data.isadmin == '1'? true : false;
-        isadmin ? $('table .isadmin').show() : $('table .isadmin').hide();
+        isadmin ? $('.isadmin').show() : $('.isadmin').hide();
 
         delete data.isadmin;
 
@@ -187,7 +187,9 @@ toastr.options = index.setting;
 
 	$(function () {
         
-        
+        index.init();
+		vmlist();
+
 		index.getCurrentUid().done(function (data) {
 			var li = $('#uid');
 			var p = $('<p>').attr({class: 'navbar-text'});
@@ -198,9 +200,7 @@ toastr.options = index.setting;
 			index.isadmin = data.isadmin === '1' ? true : false;
 		});
 		
-        index.init();
-		vmlist();
-
+        
         $('#vmlist').click(function() {
             vmlist();
         });

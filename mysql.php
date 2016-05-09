@@ -5,58 +5,50 @@ class MySQL {
 	private $dbuser = 'root';
 	private $dbpass = 'inwin888';
 	private $dbname = 'libvirt';
+    private $settings = array(
+        PDO::ATTR_PERSISTENT => false,
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_EMULATE_PREPARES => false,
+        PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES utf8' 
+    );
 	private $conn;
 
 	public function __construct() {
-		$this->conn = mysql_connect($this->dbhost, $this->dbuser, $this->dbpass);
-		mysql_query("SET NAMES 'utf8'");
-		mysql_select_db($this->dbname);
+        try {
+            $this->conn = new PDO("mysql:host=$this->dbhost;dbname=$this->dbname;",$this->dbuser, $this->dbpass, $this->settings);
+        } catch(PDOException $e) {
+        
+            throw new PDOException($e->getMessage());
+        }
 	}
 
-	public function select($sql) {
-		$arr = array();
-		$result = mysql_query($sql);
-		if($result === false) {
-			die(mysql_error());
-		}
-		while($row = mysql_fetch_array($result)) {
-			$arr[] = $row;
-		}
-		
-		return $arr;
+	public function select($sql, $params) {
+        $query = $this->conn->prepare($sql);
+        try {
+            if ($query->execute($params)) {
+	            return $query->fetchAll(PDO::FETCH_ASSOC);
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            return false;
+        } 
 	}
 
-    public function insert($sql) {
-        $result = mysql_query($sql);
-        if($result === false){
-            die(mysql_error());
-        }
-        
-        return true;
-    
+    public function execute($sql, $params) {
+        $query = $this->conn->prepare($sql);
+        try {
+            if ($query->execute($params)) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (PDOException $e) {
+            return false;
+        } 
     }
 
-    public function update($sql) {
-        $result = mysql_query($sql);
-        if($result === false){
-            die(mysql_error());
-        }
-        
-        return true;
     
-    }
-
-    public function delete($sql) {
-        $result = mysql_query($sql);
-        if($result === false){
-            die(mysql_error());
-        }
-        
-        return true;
-    
-    }
-
 }
-	
 
 ?>

@@ -86,54 +86,52 @@ function reset (elementArray) {
         
         }
 
-        create.getAllvmName(index.uid).done(function(data) {
 
-            $('.btn-default').click(function() {
-                var button = $(this);
+        $('.btn-default').click(function() {
+            var button = $(this);
 
-                if(button.val() == 'create_submit') {
-                    var name = $('#Inputname').val();
-                    var vcpu = $('#Inputvcpu').val();    
-                    var mem = $('#Inputmem').val();    
-                    var template = $('#Inputtemplate').val();    
-                    var host = $('#Inputhost').val();
+            if(button.val() == 'create_submit') {
+                var name = $('#Inputname').val();
+                var vcpu = $('#Inputvcpu').val();    
+                var mem = $('#Inputmem').val();    
+                var template = $('#Inputtemplate').val();    
+                var host = $('#Inputhost').val();
 
-                    create.sendData(name, vcpu, mem, template, host).done(function (data) {
-                        toastr['success']('創建虛擬機器成功','成功');
-                        resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]);
-                        if(index.isadmin) {
-                            window.location.href = './index.php';
-                        }
-                    });
-
-                    
-                    
-                }
-                 
-            });
-
-            $('.create_close').click(function() {
-                $('.form-group').find('small').remove();
-                resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
-            });
-
-            $('#Inputname').keyup(function() {
-                var name = $(this).val();
-                var input = $(this);
-                input.closest('div').find('small').remove();
-                !data.length && name != '' && $('.create_submit').attr({'disabled': false});
-                $.each(data, function(index, value) {
-                    if(name == value.name || name == '') {
-                        input.addClass('error');
-                        input.after($('<small>').text('虛擬機器名稱已重複'));
-                        $('.create_submit').attr({'disabled': true});
-                        return false;
-                    } else {
-                        input.removeClass('error');
-                        $('.create_submit').attr({'disabled': false});
+                create.sendData(name, vcpu, mem, template, host).done(function (data) {
+                    toastr['success']('創建虛擬機器成功','成功');
+                    resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]);
+                    if(index.isadmin) {
+                        window.location.href = './index.php';
                     }
                 });
 
+                
+                
+            }
+             
+        });
+
+        $('.create_close').click(function() {
+            $('.form-group').find('small').remove();
+            resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
+        });
+
+        $('#Inputname').keyup(function() {
+            var name = $(this).val();
+            var input = $(this);
+            input.closest('div').find('small').remove();
+            name != '' && $('.create_submit').attr({'disabled': false});
+            $('.wrap tr').each(function(index, value) {
+                console.dir($(value),find()); 
+                if(($(value).find('#name').text() == name || name == '') && (index.isadmin ? $(value).find('#uid').text() == index.uid : 1)) {
+                    input.addClass('error');
+                    input.after($('<small>').text('虛擬機器名稱已重複'));
+                    $('.create_submit').attr({'disabled': true});
+                    return false;
+                } else {
+                    input.removeClass('error');
+                    $('.create_submit').attr({'disabled': false});
+                }
             });
 
         });

@@ -48,6 +48,7 @@ if(!isset($_SESSION['uid'])) {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li id="uid"></li>
+        <li id="modifyPassword"><a href="#userinfo">修改密碼</a></li>
         <li><a id="logout" href="#logout">登出</a></li>
       </ul>
     </div><!--/.nav-collapse -->
@@ -128,6 +129,28 @@ if(!isset($_SESSION['uid'])) {
             </tbody>
         </table>
     </div>
+    <div class="modifyPassword">
+        <h3>修改密碼</h3>
+        <hr>
+        <div class="form-group">
+            <label for="oldpassword">舊密碼</label>
+            <input type="password" id="oldpassword" class="form-control password">
+        </div>
+
+        <div class="form-group">
+            <label for="newpassword">新密碼</label>
+            <input type="password" id="newpassword" class="form-control password">
+        </div>
+
+        <div class="form-group">
+            <label for="confrirmpassword">確認新密碼</label>
+            <input type="password" id="confirmpassword" class="form-control password">
+        </div>
+
+        <button type="button" data-loading-text="等待中....." class="btn btn-default modify_submit" value="modify_submit">送出</button>
+
+    </div>
+
 </div>
 <div class='modal fade' id="create_modal" role="dialog">
     <div class="modal-dialog">
