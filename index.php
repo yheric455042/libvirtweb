@@ -9,18 +9,21 @@ if(!isset($_SESSION['uid'])) {
 <html lang="en">
 <head>
         
+        <title>虛擬機管理</title>
 		<meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <title>虛擬機管理</title>
-		<meta name="description" content="">
-        <meta name="author" content="">
         <link type="text/css" rel="stylesheet" href="bootstrap/css/bootstrap.min.css"/>
         <link href="css/toastr.css" rel="stylesheet" type="text/css" />
+        <link href="css/fileinput.min.css" media="all" rel="stylesheet" type="text/css" />
 		<link type="text/css" rel="stylesheet" href="css/index.css"/>
 		<script type="text/javascript" src="js/jquery-1.12.2.min.js"></script>
+        <script type="text/javascript" src="js/jquery.iframe-transport.js"></script>
+        <script type="text/javascript" src="js/jquery-ui.custom.js"></script>
+        <script type="text/javascript" src="js/jquery.fileupload.js"></script>
+        <script type="text/javascript" src="js/fileinput.min.js"></script>
         <script type="text/javascript" src="bootstrap/js/bootstrap.min.js"></script>
-        <script src="js/toastr.js"></script>
+        <script type="text/javascript" src="js/toastr.js"></script>
 		<script type="text/javascript" src="js/index.js"></script>
 		<script type="text/javascript" src="js/create.js"></script>
 		<script type="text/javascript" src="js/pendinglist.js"></script>
@@ -116,6 +119,9 @@ if(!isset($_SESSION['uid'])) {
     <div class="userinfo">
         <h3>使用者列表</h3>
         <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#user_modal" style="font-size: 18px;">創建使用者</button>
+        <br><h4 class="control-label">上傳檔案</h4>
+        <input id="input-file"  name="input-file" type="file" class="file" data-show-preview="false" data-allowed-file-extensions='["csv"]'>
+        <progress max="100" value=""></progress>
         <hr>
         <table class="table table-bordered">
             <thead>

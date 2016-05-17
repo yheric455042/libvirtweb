@@ -8,46 +8,22 @@ class Controller {
 	private $libvirt = array();
     private $ips;
     private $templates;
+    private $user;
     //private $config;
-	public function __construct($SQLClass, $hosts_ip, $templates) {
+	public function __construct($SQLClass, $hosts_ip, $templates, $user) {
 		$this->SQLClass = $SQLClass;
         $this->templates = $templates;
         $this->ips = $hosts_ip;
+        $this->user = $user;
         for($i = 0; $i < sizeof($hosts_ip); $i++) {
 		    $this->libvirt[$i] = new Libvirt('qemu+ssh://root@'.$hosts_ip[$i].'/system');
         }
 	}
     
-    private function getUser() {
-        session_start();
-         
-        return array('uid' => $_SESSION['uid'], 'isadmin' => $_SESSION['isadmin']);
-    }
-
-	public function login($params) {
-		$uid = $params['uid'];
-		$password = $params['password'];
-		$sql = "SELECT * FROM user WHERE uid= ? AND passwd= ?";
-        $params = array($uid, $password);
-
-		$query = $this->SQLClass->select($sql, $params);
-		if(sizeof($query)) {
-			foreach($query as $userarray) {
-				
-				session_start();
-				$_SESSION['uid'] = $uid;
-				$_SESSION['isadmin'] = $userarray['isadmin']; 
-				return 'success';
-			}
-			
-		} else {
-
-			return 'error';
-		}
-	}
+    
 	
 	public function getVMList($params) {
-        $userArray = $this->getUser();
+        $userArray = $this->user->getUser();
         $uid = $userArray['uid'];
         $where = $userArray['isadmin'] == '1' ? "1" : "uid = ?";
 		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where", $userArray['isadmin'] == '1' ? array() : array($uid));
@@ -97,10 +73,12 @@ class Controller {
                     $template = $user_data['template'];
                 }
                 
+                if($this->vmRepeat($uid, $name)) {
+                    return 'error';
+                }
+
                 $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES(?,?,?,?)";
-
                 if($this->SQLClass->execute($sql, array($uid, $name, $host, $mem))) {
-
                     $this->createVM($host, $vcpu, $mem, $template, $uid, $name);
                     $result = $this->SQLClass->execute("UPDATE  pending_list SET status = 2 WHERE id=?",array($id)) ? 'success' : 'error'; // 2 is done
                  
@@ -111,18 +89,21 @@ class Controller {
             }
 
 
-        } else if($isadmin == 'true') {
+        } else if($params['isadmin'] == 'true') {
             $name = $params['name'];
-            $isadmin = $params['isadmin'];
             $uid = $params['uid'];    
             $vcpu = $params['vcpu'];    
             $mem = $params['mem'];
-            $template = $params['template'];    
+            $template = $params['template']; 
+
+            if($this->vmRepeat($uid, $name)) {
+                    return 'error';
+            }
 
             $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES(?,?,?,?)";
-
+            $uuid = $this->createVM($host, $vcpu, $mem, $template, $uid, $name);
             if($this->SQLClass->execute($sql, array($uid, $name, $host, $mem))) {
-                return array('uuid' => $this->createVM($host, $vcpu, $mem, $template, $uid, $name));
+                return array('uuid' => $uuid);
             }
         } else {
             $name = $params['name'];
@@ -131,7 +112,11 @@ class Controller {
             $vcpu = $params['vcpu'];    
             $mem = $params['mem'];
             $template = $params['template'];    
- 
+
+            if($this->vmRepeat($uid, $name)) {
+                return 'error';
+            }
+
             $sql = "INSERT INTO pending_list (uid, name, vcpu, mem, template, ts, status) VALUES(?,?,?,?,?,?,?)";
 
             if($this->SQLClass->execute($sql, array($uid, $name, $vcpu, $mem, $template, time(), 0))) { // 0 is unchecked
@@ -142,43 +127,14 @@ class Controller {
         }
     } 
     
-    public function getAllvmName($params) {
-        $uid = $params['uid'];
-        
-        $userVMs = $this->SQLClass->select("SELECT name FROM vmlist WHERE uid=?",array($uid));
-        return $userVMs;
-    }
-
-    public function getuserList() {
-        $userArray = $this->getUser();
-        $isadmin = $userArray['isadmin'] == '1' ? true : false;
-        
-        if($isadmin) {
-            $users = $this->SQLClass->select("SELECT uid, displayname, email FROM user",array());
-
-            return $users;
+    private function vmRepeat($uid, $name) {
+        foreach($this->SQLClass->select('SELECT name FROM vmlist WHERE uid=?',array($uid)) as $row) {
+            if($row['name'] == $name) return true;
         }
 
-        return 'notadmin';
+        return false;
     }
 
-    public function userCreate($params) {
-        $uid = $params['uid'];
-        $password = $params['password'];
-        $displayname = $params['displayname'];
-        $email = $params['email'];
-        $user = $this->getUser();
-        $isadmin = $user['isadmin'] == '1' ? true :false;
-        
-        $sql = "INSERT INTO user (uid, passwd, displayname, email) VALUES(?,?,?,?)";
-        $status = $isadmin ? $this->SQLClass->execute($sql, array($uid,$password, $displayname, $email)) : false;
-        if($status) {
-            return 'success';
-        }
-        
-        return 'error';
-
-    }
 
     public function hostInfo() {
                 
@@ -191,10 +147,9 @@ class Controller {
         $host = array();
 
         for($i= 0; $i < count($this->ips); $i++) {
-            $info = $this->libvirt[$i]->get_connect_information();
             $node = $this->libvirt[$i]->host_get_node_info();
 
-            $host[$i] = ['vcpu_max' => $info['hypervisor_maxvcpus'], 'mem_max' => number_format($node['memory']/1048576, 2 , '.', ' ') - 0.5, 'vcpu_used' => 0, 'mem_used' => 0];
+            $host[$i] = ['vcpu_max' => $node['cpus'], 'mem_max' => number_format($node['memory']/1048576, 2 , '.', ' ') - 0.5, 'vcpu_used' => 0, 'mem_used' => 0];
         }
         
         foreach($vms as $vm) {
@@ -206,19 +161,6 @@ class Controller {
         }
 
         return $host;
-    }
-
-    public function modifyPassword($params) {
-        $userArray = $this->getUser();
-        $uid = $userArray['uid'];
-        $oldpassword = $params['oldpass'];
-        $newpassword = $params['newpass'];
-        if(count($this->SQLClass->select('SELECT COUNT(*) FROM user WHERE uid= ? AND passwd = ?', array($uid, $oldpassword))) > 0) {
-            $msg =  $this->SQLClass->execute('UPDATE user SET passwd = ? WHERE uid = ?', array($newpassword, $uid)) ? 'success' : 'error' ;
-
-            return $msg;
-        }
-        return 'error';
     }
 
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
@@ -295,14 +237,13 @@ class Controller {
     }
 
     public function getpendingList() {
-        $userArray = $this->getUser();
+        $userArray = $this->user->getUser();
         $uid = $userArray['uid'];
         $where = $userAray['isadmin']  == '1'? "1" : "uid = ?";
         $sql = "SELECT * FROM pending_list WHERE (status = 1 OR status = 0) AND $where";
         $list = array();
         $params = $userArray['isadmin']== '1' ? array() : array($uid);
         $result = $this->SQLClass->select($sql, $params);
-        file_put_contents('result', print_r($result,true));
         foreach($result as $request) {
             $request['template'] = substr($this->templates[$request['template']],0,-6);
             array_push($list, $request);

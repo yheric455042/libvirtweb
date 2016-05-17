@@ -1,15 +1,16 @@
 <?php
 require_once('mysql.php');
 require_once('controller.php');
+require_once('user.php');
 require_once('config.php');
 
 
 $mysql = new MySQL();
-$controller = new Controller($mysql, $hosts_ip, $templates);
-
+$user = new User($mysql);
+$controller = new Controller($mysql, $hosts_ip, $templates, $user);
 switch ($_POST['action']) {
 	case 'login':
-		echo $controller->login($_POST['params']);
+		echo $user->login($_POST['params']);
 		break;
 	
 	case 'logout':
@@ -54,11 +55,11 @@ switch ($_POST['action']) {
         break;
 
     case 'userList':
-        echo json_encode($controller->getuserList());
+        echo json_encode($user->getuserList());
         break;
 
     case 'userCreate':
-        echo $controller->userCreate($_POST['params']);
+        echo $user->userCreate($_POST['params']);
         break;
 
     case 'hostInfo':
@@ -66,7 +67,11 @@ switch ($_POST['action']) {
         break;
 
     case 'modifyPassword':
-        echo $controller->modifyPassword($_POST['params']);
+        echo $user->modifyPassword($_POST['params']);
+        break;
+
+    case 'removeUser': 
+        echo $user->removeUser($_POST['params']);
         break;
 
 

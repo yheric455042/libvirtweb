@@ -216,7 +216,6 @@
 
             $button.button('loading');
             user.modifyPassword(oldpass, newpass).done(function(data) {
-                console.dir($button);
                 if(data == 'success') {
                     toastr['success']('修改密碼成功','成功');
                 } else {
@@ -230,8 +229,53 @@
 
         });
 
-        
+        $('.fileinput-remove').on('click',function() {
 
+            
+            $('progress').attr({value: 0});
+        });
+    
+        $('#input-file').fileupload({
+            url : 'upload.php',
+            dataType: 'json',
+            add: function(e,data) {
+                
+                $('.fileinput-upload').click(function() {
+                    
+                    $('progress').attr({value: 0});
+                    data.submit();
+                    $(this).off('click');
+                });
+            },
+            progress: function(e,data) {
+                var progress = parseInt(data.loaded / data.total * 100, 10);
+                $('progress').attr({value: progress});
+            },
+            done:function(e,data) {
+                if(data.result.status == 'error') {
+                    toastr['error']('新增使用者失敗', '失敗');
+                } else {
+                    $.each(data.result.data, function(index, value) {
+                        var tr = $('<tr>');
+
+                        tr.append($('<td>').append(value[0]));
+                        tr.append($('<td>').append(value[2]));
+                        tr.append($('<td>').append(value[3]));
+                        $('.userinfo tbody').append(tr);
+                    }); 
+
+
+                    toastr['success']('新增使用者成功', '成功');
+                }
+            },
+            fail: function(e,data) {
+                
+               
+                toastr['error']('上傳失敗', '失敗');
+            },
+            stop: function(e) {
+            },
+        }); 
     
     });
 
