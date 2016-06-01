@@ -168,11 +168,11 @@ class Controller {
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
         exec('ssh root@'.$this->ips[$host].' chown -R qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'qcow2');
         $xml = "
-        <domain type='qemu'>
+        <domain type='kvm'>
           <name>".$uid."-".$name."</name>
           <memory unit='KiB'>$memory</memory>
           <currentMemory unit='KiB'>$memory</currentMemory>
-          <vcpu placement='static'>$vcpu</vcpu>
+          <vcpu placement='static' current='$vcpu'>$vcpu</vcpu>
           <os>
             <type arch='x86_64' machine='pc-i440fx-rhel7.0.0'>hvm</type>
             <boot dev='hd'/>
@@ -180,19 +180,12 @@ class Controller {
           <features>
             <acpi/>
             <apic/>
+            <pae/>
           </features>
-          <clock offset='utc'>
-            <timer name='rtc' tickpolicy='catchup'/>
-            <timer name='pit' tickpolicy='delay'/>
-            <timer name='hpet' present='no'/>
-          </clock>
+          <clock offset='localtime'/>
           <on_poweroff>destroy</on_poweroff>
           <on_reboot>restart</on_reboot>
           <on_crash>restart</on_crash>
-          <pm>
-            <suspend-to-mem enabled='no'/>
-            <suspend-to-disk enabled='no'/>
-          </pm>
           <devices>
             <emulator>/usr/libexec/qemu-kvm</emulator>
             <disk type='file' device='disk'>
@@ -200,11 +193,8 @@ class Controller {
               <source file='/var/lib/libvirt/images/".$uid."-".$name.".qcow2'/>
               <target dev='vda' bus='virtio'/>
             </disk>
-            <controller type='usb' index='0' model='ich9-ehci1' />
-            <controller type='usb' index='0' model='ich9-uhci1' />
+            <controller type='usb' index='0'/>
             <controller type='pci' index='0' model='pci-root'/>
-            <controller type='ide' index='0' />
-            <controller type='virtio-serial' index='0' />
             <interface type='bridge'>
               <mac address='".$this->libvirt[$host]->generate_random_mac_addr()."'/>
               <source bridge='br0'/>

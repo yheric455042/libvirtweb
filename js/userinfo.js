@@ -46,6 +46,19 @@
             }
         }); 
     };
+
+    user.deleteUser = function(uid) {
+        return $.ajax({
+            type: 'POST',
+            url: 'base.php',
+            data: {
+                action: 'removeUser',
+                params: {
+                   user: uid 
+                }
+            }
+        });
+    };
     
     function resetInput(elementArray) {
         reset(elementArray);
@@ -78,7 +91,7 @@
                 var email = $('#Inputemail').val();
                 var tr = $('<tr>');
                 var loading_td = $('<td>').append($('<div>').attr({class: 'loading-action'}));
-                var tds = [loading_td.clone(), loading_td.clone(), loading_td.clone()];
+                var tds = [loading_td.clone(), loading_td.clone(), loading_td.clone(), loading_td.clone()];
 
                 $.each(tds, function(index, value) {
                     tr.append(value);
@@ -95,7 +108,7 @@
                     } else {
                         
                         $.each(tds, function(index, value) {
-                            var out = [uid, displayname, email]
+                            var out = [uid, displayname, email, $('<button class="deleteUser btn btn-danger">').text('刪除')]
                             value.find('div').replaceWith(out[index]);
                         });
                         
@@ -167,16 +180,27 @@
                 }
                 $.each(users, function(index, user) {
                     var tr = $('<tr>');
-
-                    tr.append($('<td>').append(user.uid));
+                    tr.append($('<td id="uid">').append(user.uid));
                     tr.append($('<td>').append(user.displayname));
                     tr.append($('<td>').append(user.email));
+                    tr.append($('<td> ').append($('<button class="deleteUser btn btn-danger">').text('刪除')));
                     
                     $('.userinfo tbody').append(tr);
 
                 });
                 index.transshow('show', $('.userinfo'));
             });
+        });
+
+        $('.userinfo').on('click', '.deleteUser', function () {
+            var uid = $(this).closest('tr').find('#uid').text();
+            var tr = $(this).closest('tr');
+            
+            user.deleteUser(uid).done(function () {
+                tr.remove();
+            });
+
+        
         });
 
         $('#modifyPassword').click(function () {
@@ -261,6 +285,7 @@
                         tr.append($('<td>').append(value[0]));
                         tr.append($('<td>').append(value[2]));
                         tr.append($('<td>').append(value[3]));
+                        tr.append($('<td> ').append($('<button class="deleteUser btn btn-danger">').text('刪除')));
                         $('.userinfo tbody').append(tr);
                     }); 
 

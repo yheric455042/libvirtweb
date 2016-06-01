@@ -79,23 +79,21 @@ class User {
         }
         return 'error';
     }
-/*
+
     public function removeUser($params) {
         $userArray = $this->getUser();
         $isadmin = $userArray['isadmin'] ? true: false;
 
-        $users = $params['users'];
+        $user = $params['user'];
         $msg = $isadmin ? 'success' : 'error';
-        $isadmin && for($i = 0;$i < count($users);$i++) {
-            if(!$this->mysql->select('DELETE FROM user WHERE uid= ?', array($users[$i]))) {
-                continue;
-            }
-        
+        if($isadmin) {
+            $this->mysql->execute('DELETE FROM user WHERE uid= ?', array($user));
+            
         }
 
         return $msg;
     }
-*/
+
 
 }
 

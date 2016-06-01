@@ -129,6 +129,7 @@ if(!isset($_SESSION['uid'])) {
                     <th>帳號</th>
                     <th>使用者名稱</th>
                     <th>Email</th>
+                    <th>操作</th>
                 </tr>
             </thead>
             <tbody>
