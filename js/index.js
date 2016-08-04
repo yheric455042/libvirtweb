@@ -2,7 +2,7 @@
 var index = {
 		uid: '',
 		isadmin: '',
-        view: ['wrap', 'pending', 'userinfo', 'hostinfo', 'modifyPassword'],
+        view: ['wrap', 'pending', 'userinfo', 'hostinfo', 'modifyPassword', 'templateinfo'],
         shutdownButton:  $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'shutdown'}),
 	    startButton: $('<button>').attr({class: 'vmAction btn btn-success' , id: 'start'}),
 	    deleteButton: $('<button>').attr({class: 'vmAction btn btn-danger' , id: 'delete'}),

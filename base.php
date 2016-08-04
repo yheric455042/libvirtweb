@@ -7,7 +7,14 @@ require_once('config.php');
 
 $mysql = new MySQL();
 $user = new User($mysql);
-$controller = new Controller($mysql, $hosts_ip, $templates, $user);
+
+$template_file = [];
+$templates = $mysql->select('SELECT * from templates',array());
+foreach($templates as $template) {
+    $template_file[] = $template['file_name'];
+}
+
+$controller = new Controller($mysql, $hosts_ip, $template_file, $user);
 switch ($_POST['action']) {
 	case 'login':
 		echo $user->login($_POST['params']);
@@ -73,6 +80,15 @@ switch ($_POST['action']) {
     case 'removeUser': 
         echo $user->removeUser($_POST['params']);
         break;
+
+    case 'modifyAdmin':
+        echo $user->modifyAdmin($_POST['params']);
+        break;
+
+    case 'getTemplate': 
+        echo json_encode($templates);
+        break;
+
 
 
 

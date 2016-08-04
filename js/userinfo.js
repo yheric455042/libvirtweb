@@ -33,8 +33,8 @@
 
     user.Createuser = function(uid, password, displayname, email) {
         return $.ajax({
-           type: 'POST',
-           url: 'base.php',
+            type: 'POST',
+            url: 'base.php',
             data: {
                 action: 'userCreate',
                 params: {
@@ -46,6 +46,21 @@
             }
         }); 
     };
+    
+    user.adminAction = function(uid, admin) {
+        return $.ajax({
+            type: 'POST',
+            url: 'base.php',
+            data: {
+                action: 'modifyAdmin',
+                params: {
+                    user: uid,
+                    admin: admin
+                }
+            }
+        });
+    
+    }
 
     user.deleteUser = function(uid) {
         return $.ajax({
@@ -108,8 +123,15 @@
                     } else {
                         
                         $.each(tds, function(index, value) {
-                            var out = [uid, displayname, email, $('<button class="deleteUser btn btn-danger">').text('刪除')]
-                            value.find('div').replaceWith(out[index]);
+                            var div = $('<div>').attr({class: 'userAction'});
+                            var adminBtn = $('<button>').attr({class: 'adminAction btn btn-success', value: '0'});
+                            
+                            adminBtn.text('增加管理者');
+                            div.append($('<button class="deleteUser btn btn-danger">').text('刪除'));
+                            div.append(adminBtn);
+
+                            var out = [uid, displayname, email, div];
+                            value.find('.loading-action').replaceWith(out[index]);
                         });
                         
                         toastr['success']('新增使用者成功','成功');
@@ -180,10 +202,17 @@
                 }
                 $.each(users, function(index, user) {
                     var tr = $('<tr>');
+                    var div = $('<div>').attr({class: 'userAction'});
+                    var adminBtn = $('<button>').attr({class: user.isadmin == '1' ? 'adminAction btn btn-warning' : 'adminAction btn btn-success', value: user.isadmin});
+                    adminBtn.text(user.isadmin == '1' ? '刪除管理者' : '增加管理者');
+
                     tr.append($('<td id="uid">').append(user.uid));
                     tr.append($('<td>').append(user.displayname));
                     tr.append($('<td>').append(user.email));
-                    tr.append($('<td> ').append($('<button class="deleteUser btn btn-danger">').text('刪除')));
+                    user.uid != 'admin' && div.append($('<button class="deleteUser btn btn-danger">').text('刪除'));
+                    user.uid != 'admin' && div.append(adminBtn);
+                    
+                    tr.append($('<td>').append(div));
                     
                     $('.userinfo tbody').append(tr);
 
@@ -198,6 +227,21 @@
             
             user.deleteUser(uid).done(function () {
                 tr.remove();
+            });
+
+        
+        });
+
+        $('.userinfo').on('click', '.adminAction', function () {
+            var uid = $(this).closest('tr').find('#uid').text();
+            var btn = $(this);
+            var admin = $(this).val(); 
+            user.adminAction(uid, admin == '1' ? '0' : '1' ).done(function () {
+                var before = admin == '1' ? 'btn-warning' : 'btn-success';
+                var after = admin == '1' ? 'btn-success' : 'btn-warning';
+                btn.removeClass(before).addClass(after);
+                btn.text(admin == '1' ? '增加管理者' : '刪除管理者');
+                btn.val(admin == '1' ? '0' : '1');
             });
 
         
@@ -264,16 +308,16 @@
             dataType: 'json',
             add: function(e,data) {
                 
-                $('.fileinput-upload').click(function() {
+                $('#input-file').closest('.input-group').find('.fileinput-upload').click(function() {
                     
-                    $('progress').attr({value: 0});
+                    $('#progress-file').attr({value: 0});
                     data.submit();
                     $(this).off('click');
                 });
             },
             progress: function(e,data) {
                 var progress = parseInt(data.loaded / data.total * 100, 10);
-                $('progress').attr({value: progress});
+                $('#progress-file').attr({value: progress});
             },
             done:function(e,data) {
                 if(data.result.status == 'error') {
@@ -281,11 +325,16 @@
                 } else {
                     $.each(data.result.data, function(index, value) {
                         var tr = $('<tr>');
+                        var div = $('<div>').attr({class: 'userAction'});
+                        var adminBtn = $('<button>').attr({class: 'adminAction btn btn-success',value: '0'});
+                        adminBtn.text('增加管理者');
+                        div.append($('<button class="deleteUser btn btn-danger">').text('刪除'));
+                        div.append(adminBtn);
 
                         tr.append($('<td>').append(value[0]));
                         tr.append($('<td>').append(value[2]));
                         tr.append($('<td>').append(value[3]));
-                        tr.append($('<td> ').append($('<button class="deleteUser btn btn-danger">').text('刪除')));
+                        tr.append($('<td> ').append(div));
                         $('.userinfo tbody').append(tr);
                     }); 
 

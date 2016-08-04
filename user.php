@@ -41,7 +41,7 @@ class User {
         $isadmin = $userArray['isadmin'] == '1' ? true : false;
         
         if($isadmin) {
-            $users = $this->mysql->select("SELECT uid, displayname, email FROM user",array());
+            $users = $this->mysql->select("SELECT uid, displayname, email, isadmin FROM user",array());
 
             return $users;
         }
@@ -85,9 +85,25 @@ class User {
         $isadmin = $userArray['isadmin'] ? true: false;
 
         $user = $params['user'];
-        $msg = $isadmin ? 'success' : 'error';
-        if($isadmin) {
+        $msg = $isadmin && $user != 'admin' ? 'success' : 'error';
+        if($isadmin && $user != 'admin') {
             $this->mysql->execute('DELETE FROM user WHERE uid= ?', array($user));
+            
+        }
+
+        return $msg;
+    }
+
+    public function modifyAdmin($params) {
+        $userArray = $this->getUser();
+        $isadmin = $userArray['isadmin'] ? true: false;
+
+        $user = $params['user'];
+        
+        $msg = $isadmin && $user != 'admin' ? 'success' : 'error';
+        if($isadmin && $user != 'admin') {
+            $this->mysql->execute('UPDATE user SET isadmin = ? WHERE uid= ?', array(intval($params['admin']), $user));
+            file_put_contents('uid.txt', $params['admin']);
             
         }
 

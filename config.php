@@ -1,13 +1,7 @@
 <?php
 $hosts_ip = array (
-    0 => '192.168.0.101',
+    0 => '140.129.13.253',
 
 
-);
-
-$templates = array (
-    0 => 'win7.qcow2',
-    1 => 'centos7.qcow2',
-    2 => 'ubuntu14.04.qcow2',
 );
 ?>

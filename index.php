@@ -29,6 +29,7 @@ if(!isset($_SESSION['uid'])) {
 		<script type="text/javascript" src="js/pendinglist.js"></script>
 		<script type="text/javascript" src="js/userinfo.js"></script>
 		<script type="text/javascript" src="js/hostinfo.js"></script>
+		<script type="text/javascript" src="js/templateinfo.js"></script>
 </head>
 <body>
 
@@ -48,6 +49,7 @@ if(!isset($_SESSION['uid'])) {
         <li id="pendinglist"><a href="#pendinglist">審核列表</a></li>
         <li id="hostinfo" class="isadmin"><a href="#hostinfo">主機資訊</a></li>
         <li id="userinfo" class="isadmin"><a href="#userinfo">使用者列表</a></li>
+        <li id="templateinfo" class="isadmin"><a href="#template">模板列表</a></li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li id="uid"></li>
@@ -77,11 +79,11 @@ if(!isset($_SESSION['uid'])) {
                     <th>虛擬機名稱</th>
                     <th class="isadmin">主機</th>
                     <th>CPU#</th>
-                    <th>記憶體</th>
-                    <th>硬碟</th>
+                    <th style="min-width:66.36px;">記憶體</th>
+                    <th style="min-width:97.27px;">硬碟</th>
                     <th>系统</th>
                     <th>狀態</th>
-                    <th>操作</th>
+                    <th style="min-width:234.67px;">操作</th>
                 </tr>	
             </thead>
             <tbody>
@@ -100,7 +102,7 @@ if(!isset($_SESSION['uid'])) {
                     <th class="isadmin">帳號</th>
                     <th>虛擬機名稱</th>
                     <th>CPU#</th>
-                    <th>記憶體</th>
+                    <th style="min-width:66.36px;">記憶體</th>
                     <th>模板</th>
                     <th class="isadmin">主機</th>
                     <th class="isadmin">核准</th>
@@ -121,7 +123,7 @@ if(!isset($_SESSION['uid'])) {
         <button id="create_vm" class="btn btn-primary" data-toggle="modal" data-target="#user_modal" style="font-size: 18px;">創建使用者</button>
         <br><h4 class="control-label">上傳檔案</h4>
         <input id="input-file"  name="input-file" type="file" class="file" data-show-preview="false" data-allowed-file-extensions='["csv"]'>
-        <progress max="100" value=""></progress>
+        <progress id="progress-file" max="100" value=""></progress>
         <hr>
         <table class="table table-bordered">
             <thead>
@@ -136,6 +138,23 @@ if(!isset($_SESSION['uid'])) {
             </tbody>
         </table>
     </div>
+    
+    <div class="templateinfo">
+        <h3>模板列表</h3>
+        <h4 class="control-label">上傳檔案</h4>
+        <input id="input-img"  name="input-img" type="file" class="file" data-show-preview="false" data-allowed-file-extensions='["img","qcow2"]'>
+        <progress id="progress-img" max="100" value=""></progress>
+        <hr>
+        <table class="table table-bordered">
+            <thead>
+                <th>模板</th>
+                <th>操作</th>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
     <div class="modifyPassword">
         <h3>修改密碼</h3>
         <hr>
@@ -192,9 +211,6 @@ if(!isset($_SESSION['uid'])) {
                 <div class="form-group">
                     <label for="Inputtemplate">模板</label>
                     <select id="Inputtemplate" class="form-control">
-                        <option value="0">Win7</option>
-                        <option value="1">CentOS7</option>
-                        <option value="2">Ubuntu14.04</option>
                     </select>
                 </div>
                 <div class="form-group isadmin">

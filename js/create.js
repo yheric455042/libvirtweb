@@ -33,22 +33,20 @@ function reset (elementArray) {
         });
     
     };
-    
-    create.getAllvmName = function(uid) {
+
+    create.getTemplate = function() {
         return $.ajax({
             type: 'POST',
             url: 'base.php',
             dataType: 'json',
             async: false,
             data: {
-                action: 'getAllvmName',
-                params: {
-                    uid: uid
-                }
+                action: 'getTemplate'
             }
+        
         });
     }
-
+    
     create.gethostCount = function() {
         return $.ajax({
             type: 'POST',
@@ -77,14 +75,22 @@ function reset (elementArray) {
         } else {
             
             $('#create_vm').append('添加虛擬機');
+        }
+        
+        $('#create_vm').click(function() {
+            create.getTemplate().done(function(data) {
+                $.each(data, function(index, value) {
+                  $('#Inputtemplate').append('<option value="'+index+'">'+value.name+'</option>');  
+                }); 
+            });
+
             create.gethostCount().done(function(count) {
                  
                 for(var i=0; i<count;i++) {
                     $('#Inputhost').append('<option value="'+i+'">'+(i+1)+'</option>');
                 }
             }); 
-        
-        }
+        });
 
 
         $('.btn-default').click(function() {
@@ -113,6 +119,8 @@ function reset (elementArray) {
 
         $('.create_close').click(function() {
             $('.form-group').find('small').remove();
+            $('#Inputhost').find('option').remove();
+            $('#Inputtemplate').find('option').remove();
             resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
         });
 
@@ -122,7 +130,6 @@ function reset (elementArray) {
             input.closest('div').find('small').remove();
             name != '' && $('.create_submit').attr({'disabled': false});
             $('.wrap tr').each(function(index, value) {
-                console.dir($(value),find()); 
                 if(($(value).find('#name').text() == name || name == '') && (index.isadmin ? $(value).find('#uid').text() == index.uid : 1)) {
                     input.addClass('error');
                     input.after($('<small>').text('虛擬機器名稱已重複'));
