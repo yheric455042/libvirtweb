@@ -46,10 +46,10 @@ toastr.options = index.setting;
             $('.loading-list').hide();
             element.show();
             for(var i=0; i < index.view.length; i++) {
-            if(index.view[i] != element.attr('class')) {
-                $('.'+index.view[i]).hide();
+                if(index.view[i] != element.attr('class')) {
+                    $('.'+index.view[i]).hide();
+                }
             }
-        }
 
         }
         

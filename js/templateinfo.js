@@ -1,13 +1,73 @@
 (function($) {
+    function getTemplate() {
+        return $.ajax({
+            type: 'POST',
+            url: 'base.php',
+            dataType: 'json',
+            data: {
+                action: 'getTemplate'
+            }
+        
+        });
+    };
 
-    $(function () {
-        $('#templateinfo').click(function() {
-            index.transshow('hide',$('.templateinfo'));
+   function deleteTemplate(name) {
+        return $.ajax({
+            type: 'POST',
+            url: 'base.php',
+            dataType: 'json',
+            data: {
+                action: 'deleteTemplate',
+                params: {
+                    template: name
+                }
+            }
+        });
+        
+    }
+
+    function init() {
+        index.transshow('hide', $('.templateinfo'));
+        //index.transshow('hide', $('.wrap'));
+        $('.templateinfo tbody tr').remove();
+        getTemplate().done(function(data) {
+
+            $.each(data, function(index,value){
+                var tr = $('<tr>');
+                var btn = $('<button>').attr({class: 'btn btn-danger tempAction'}).text('刪除');
+                tr.append('<td class="name">'+value.name+'</td>');
+                tr.append($('<td>').append(btn));
+                $('.templateinfo table tbody').append(tr);
+            });
 
             index.transshow('show', $('.templateinfo'));
         });
 
+
+
+    }
+
+    $(function () {
+        $('#templateinfo').click(function() {
+            init();
+        });
         
+        
+        $('.templateinfo').on('click', '.tempAction', function() {
+            console.dir('text'); 
+            var name = $(this).closest('tr').find('.name').text();
+            var tr = $(this).closest('tr');
+
+            $(this).replaceWith('<div class="loading-action"></div>');
+            deleteTemplate(name).done(function(data) {
+                if(data.status == 'success') {
+                    toastr['success']('刪除模板成功', '成功');
+                    tr.remove();
+                }
+            });
+
+        });
+
         $('#input-img').fileupload({
             url: 'upload_img.php',
             dataType: 'json',
@@ -32,6 +92,7 @@
                 } else {
 
                     toastr['success']('成功', '成功');
+                    init();
                 }
             },
             fail: function(e,data) {

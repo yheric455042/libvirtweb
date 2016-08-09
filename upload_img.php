@@ -7,7 +7,6 @@
     $userArr = $user->getUser();
     $isadmin = $userArr['isadmin'] == '1' ? true : false;
 
-    file_put_contents('text.txt',print_r($_FILES['input-img'],true));
     if(isset($_FILES['input-img']) && $_FILES['input-img']['error'] == 0 && (pathinfo($_FILES['input-img']['name'], PATHINFO_EXTENSION) == 'qcow2' || pathinfo($_FILES['input-img']['name'], PATHINFO_EXTENSION) == 'img') && $isadmin) {
         
         $files = $_FILES['input-img']['name'];
@@ -24,7 +23,7 @@
             exec("scp ".getcwd()."/uploaded/$files root@$host:/var/lib/libvirt/images/");
         }
          
-        $mysql->execute('INSERT INTO templates (name, file_name) VALUES (?,?)',array(substr($files,0,-4), $files));
+        $mysql->execute('INSERT INTO templates (name, file_name) VALUES (?,?)',array(substr($files,0,-6), $files));
         
 
         echo json_encode(array('status' => 'success', 'name' => substr($files, 0, -4)));

@@ -103,7 +103,6 @@ class User {
         $msg = $isadmin && $user != 'admin' ? 'success' : 'error';
         if($isadmin && $user != 'admin') {
             $this->mysql->execute('UPDATE user SET isadmin = ? WHERE uid= ?', array(intval($params['admin']), $user));
-            file_put_contents('uid.txt', $params['admin']);
             
         }
 

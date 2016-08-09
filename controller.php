@@ -245,7 +245,21 @@ class Controller {
     }
 
 
-    
+    public function deleteTemplate($params) {
+        $template = $params['template'];
+
+        $result = $this->SQLClass->execute('DELETE FROM templates WHERE name=?',array($template)) ? 'success' : 'error';
+
+        if($result == 'success') {
+            exec("rm -rf uploaded/$template.qcow2");
+            foreach($this->ips as $host) {
+                exec("ssh root@$host rm -rf /var/lib/libvirt/images/$template.qcow2");
+            }
+        }
+        
+        return array('status' => $result);
+    }
+
 
     //$host is string that it is ip address
     public function domainControl($params) {
@@ -366,6 +380,8 @@ class Controller {
 
     
     }
+
+
 
 
 

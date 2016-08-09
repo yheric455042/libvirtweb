@@ -89,6 +89,9 @@ switch ($_POST['action']) {
         echo json_encode($templates);
         break;
 
+    case 'deleteTemplate':
+        echo json_encode($controller->deleteTemplate($_POST['params']));
+
 
 
 
