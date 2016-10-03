@@ -124,7 +124,7 @@ function reset (elementArray) {
             resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
         });
 
-        $('#Inputname').keyup(function() {
+        $('#Inputname').on('input', function() {
             var name = $(this).val();
             var input = $(this);
             input.closest('div').find('small').remove();

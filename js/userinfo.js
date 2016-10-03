@@ -149,7 +149,7 @@
                 resetInput([$('#Inputuid'), $('#Inputdisplayname'), $('#Inputpassword'), $('#Inputemail')]);
         });
 
-        $('#Inputuid').keyup(function() {
+        $('#Inputuid').on('input', function() {
             
             var input = $(this);
             input.closest('div').find('small').remove();
@@ -171,7 +171,7 @@
        
         }); 
 
-        $('#Inputemail').keyup(function() {
+        $('#Inputemail').on('input', function() {
             var input = $(this);
             
             input.closest('div').find('small').remove();
@@ -254,7 +254,7 @@
         
         });
 
-        $('.password').keyup(function() {
+        $('.password').on('input', function() {
             $('.password').closest('div').find('small').remove();
             $('.password').removeClass('error');
             $('.password').each(function(index, value) {

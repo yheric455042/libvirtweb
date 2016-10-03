@@ -29,7 +29,7 @@ class Controller {
 		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where", $userArray['isadmin'] == '1' ? array() : array($uid));
         $outputs = array();
 
-        file_put_contents('token.list', '');
+        //file_put_contents('token.list', '');
 	    foreach($vms as $vm) {
 			$name = $vm['uid']."-".$vm['name'];
             $res = $this->libvirt[$vm['host']]->get_domain_by_name($name);
@@ -355,9 +355,17 @@ class Controller {
             }
             
             $file = implode("\n", $tokenarr);
-            file_put_contents('token.list',$file);
+            file_put_contents('token.list',$file."\n");
 
         } else if($action == 'add' && $vnchost) {
+            for($i=0;$i < count($tokenarr); $i++) {
+                $key = explode(":", $tokenarr[$i]);
+                if($key[0] == $token) {
+                    return;
+                }
+
+            }
+
             file_put_contents('token.list', $token.': '.$vnchost."\n",FILE_APPEND);
             
         }
