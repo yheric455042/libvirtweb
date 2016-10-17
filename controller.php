@@ -25,8 +25,8 @@ class Controller {
 	public function getVMList($params) {
         $userArray = $this->user->getUser();
         $uid = $userArray['uid'];
-        $where = $userArray['isadmin'] == '1' ? "1" : "uid = ?";
-		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where", $userArray['isadmin'] == '1' ? array() : array($uid));
+        $where = $this->user->isadmin() ? "1" : "uid = ?";
+		$vms = $this->SQLClass->select("SELECT * FROM vmlist WHERE $where", $this->user->isadmin() ? array() : array($uid));
         $outputs = array();
 
         //file_put_contents('token.list', '');
@@ -78,8 +78,8 @@ class Controller {
                 }
 
                 $sql = "INSERT INTO vmlist (uid, name, host, mem) VALUES(?,?,?,?)";
-                if($this->SQLClass->execute($sql, array($uid, $name, $host, $mem))) {
-                    $this->createVM($host, $vcpu, $mem, $template, $uid, $name);
+                if($this->createVM($host, $vcpu, $mem, $template, $uid, $name)) {
+                    $this->SQLClass->execute($sql, array($uid, $name, $host, $mem));
                     $result = $this->SQLClass->execute("UPDATE  pending_list SET status = 2 WHERE id=?",array($id)) ? 'success' : 'error'; // 2 is done
                  
                     return $result;
@@ -166,7 +166,7 @@ class Controller {
     private function createVM($host, $vcpu, $mem, $template, $uid, $name) {
         $memory = ((int)$mem)*1024*1024;
         exec('ssh root@'.$this->ips[$host].' cp /var/lib/libvirt/images/'.$this->templates[$template].' /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
-        exec('ssh root@'.$this->ips[$host].' chown -R qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'qcow2');
+        exec('ssh root@'.$this->ips[$host].' chown -R qemu:qemu /var/lib/libvirt/images/'.$uid.'-'.$name.'.qcow2');
         $xml = "
         <domain type='kvm'>
           <name>".$uid."-".$name."</name>
@@ -248,7 +248,7 @@ class Controller {
     public function deleteTemplate($params) {
         $template = $params['template'];
 
-        $result = $this->SQLClass->execute('DELETE FROM templates WHERE name=?',array($template)) ? 'success' : 'error';
+        $result = $this->SQLClass->execute('DELETE FROM templates WHERE name=?', array($template)) ? 'success' : 'error';
 
         if($result == 'success') {
             exec("rm -rf uploaded/$template.qcow2");
@@ -311,33 +311,58 @@ class Controller {
                 break;
 
             case 'delete':
-                if(!$this->libvirt[$host]->domain_is_running($domName)) {
 
-                    $uidANDname = explode("-", $domName);
-                    $uid = $uidANDname[0];
-                    $name = $uidANDname[1];
-                    $state = $this->libvirt[$host]->domain_undefine($domName);
+                $msg =  $this->deleteVM($domName, $host) ? 'success_delete' : 'error';
 
-                    if($state) {
-                        exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$domName.'.qcow2');
-                        $this->SQLClass->execute("DELETE FROM vmlist WHERE uid=? AND name=?",array($uid, $name));
-                        $this->tokenfileControl('delete',$token);
-                        $msg = 'success_delete';
-
-                    } else {
-                        $msg =  'error';
-                    }
-                     
-                } else {
-                    $msg = 'is_running';
-                
-                }
                 break;
         }
 
 
         return array('msg'=>$msg, 'state'=>$state);
 
+    }
+
+    public function deleteVM($vmname, $host, $force = false) {
+        $res = $this->libvirt[$host]->get_domain_by_name($vmname);
+		$uuid = libvirt_domain_get_uuid_string($res);
+        $token = $host . '-'. $uuid;
+        $uidANDname = explode("-", $vmname);
+        $uid = $uidANDname[0];
+        $name = $uidANDname[1];
+
+        if($this->libvirt[$host]->domain_is_running($vmname) && !$force) {
+           
+           return false;
+
+        } else {
+
+            if($this->libvirt[$host]->domain_is_running($vmname) && $this->libvirt[$host]->domain_destroy($vmname)) {
+                $waiting = $this->waitingCurrState('shutoff', $this->libvirt[$host]->domain_is_running($vmname) ? 'running' : 'shutoff', $vmname, $host);
+                file_put_contents('wait.txt',print_r($waiting, true)."\n", FILE_APPEND);
+
+                if($waiting['msg'] === 'error') {
+                    return false;
+                 }
+            }
+
+            $state = $this->libvirt[$host]->domain_undefine($vmname);
+
+            if($state) {
+                exec('ssh root@'.$this->ips[$host].' rm -rf /var/lib/libvirt/images/'.$vmname.'.qcow2');
+                $this->SQLClass->execute("DELETE FROM vmlist WHERE uid=? AND name=?",array($uid, $name));
+                $this->tokenfileControl('delete',$token);
+
+                return true;
+            } else {
+
+                return false;
+            }
+
+
+        }
+        
+        
+ 
     }
     
     private function tokenfileControl($action, $token, $vnchost=false) {

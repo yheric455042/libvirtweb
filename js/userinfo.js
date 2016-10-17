@@ -94,7 +94,6 @@
         }
     }
     $(function () {
-        
         resetInput([$('#Inputuid'), $('#Inputdisplayname'), $('#Inputpassword'), $('#Inputemail')]);
         $('.user-btn').click(function() {
             var btn = $(this);
@@ -225,8 +224,14 @@
             var uid = $(this).closest('tr').find('#uid').text();
             var tr = $(this).closest('tr');
             
-            user.deleteUser(uid).done(function () {
-                tr.remove();
+            user.deleteUser(uid).done(function (msg) {
+                if(msg === 'success') {
+                    tr.remove();
+                    toastr['success']('刪除使用者成功','成功');
+                } else {
+                    console.dir(msg); 
+                    toastr['error']('刪除使用者失敗','失敗');
+                }
             });
 
         

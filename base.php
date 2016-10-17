@@ -1,4 +1,5 @@
 <?php
+
 require_once('mysql.php');
 require_once('controller.php');
 require_once('user.php');
@@ -7,6 +8,20 @@ require_once('config.php');
 
 $mysql = new MySQL();
 $user = new User($mysql);
+session_start();
+
+if($_POST['action'] != 'login') {
+    $count = isset($_SESSION['uid']) ? count($mysql->select('SELECT * FROM user WHERE uid = ?',array($_SESSION['uid']))) : 0;
+    if($count == 0) {
+        session_unset();
+        session_destroy();
+        exit();
+    }
+
+}
+
+$mysql->execute('DELETE FROM pending_list WHERE ts + ? < ?', array(60*60*24*180, time()));
+
 
 $template_file = [];
 $templates = $mysql->select('SELECT * from templates',array());
@@ -15,19 +30,25 @@ foreach($templates as $template) {
 }
 
 $controller = new Controller($mysql, $hosts_ip, $template_file, $user);
+
+
 switch ($_POST['action']) {
+    case 'islogin': 
+        return isset($_SESSION['uid']);
+        break;
+
 	case 'login':
 		echo $user->login($_POST['params']);
 		break;
 	
 	case 'logout':
-		session_start();
+        session_start();
 		session_destroy();
 		echo 'success';
 		break;
 
 	case 'getuid':
-		session_start();
+        session_start();
 		echo json_encode(array('uid'=>$_SESSION['uid'], 'isadmin'=> $_SESSION['isadmin']));
 		break;
 	
@@ -77,8 +98,24 @@ switch ($_POST['action']) {
         echo $user->modifyPassword($_POST['params']);
         break;
 
-    case 'removeUser': 
-        echo $user->removeUser($_POST['params']);
+    case 'removeUser':
+        $uid = $_POST['params']['user'];
+        $state = true;
+
+        if($user->isadmin()) {
+            $vms = $mysql->select('SELECT host, name FROM vmlist WHERE uid = ?',array($uid));
+            foreach($vms as $vm) {
+                $vmname = $uid .'-'. $vm['name']; 
+                if(!$controller->deleteVM($vmname, intval($vm['host']), true)) {
+                    $state = false;
+                    break;
+                }
+            }
+        }
+        $state = $state && $mysql->execute('DELETE FROM pending_list WHERE uid = ?',array($uid));
+
+        echo $state ? $user->removeUser($uid) : 'error';
+
         break;
 
     case 'modifyAdmin':

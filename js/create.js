@@ -66,7 +66,6 @@ function reset (elementArray) {
     };
 
     $(function () {
-
         resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]); 
 
         if(!index.isadmin) {
@@ -79,6 +78,7 @@ function reset (elementArray) {
         
         $('#create_vm').click(function() {
             create.getTemplate().done(function(data) {
+                $('#Inputtemplate').find('option').remove();
                 $.each(data, function(index, value) {
                   $('#Inputtemplate').append('<option value="'+index+'">'+value.name+'</option>');  
                 }); 
@@ -99,20 +99,21 @@ function reset (elementArray) {
             if(button.val() == 'create_submit') {
                 var name = $('#Inputname').val();
                 var vcpu = $('#Inputvcpu').val();    
-                var mem = $('#Inputmem').val();    
+                var mem = $('#Inputmem').val(); 
                 var template = $('#Inputtemplate').val();    
                 var host = $('#Inputhost').val();
-
+                
                 create.sendData(name, vcpu, mem, template, host).done(function (data) {
-                    toastr['success']('創建虛擬機器成功','成功');
-                    resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]);
                     if(index.isadmin) {
+                        resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate'), $('#Inputhost')]);
+                        toastr['success']('創建虛擬機器成功','成功');
                         window.location.href = './index.php';
+                    } else {
+                        resetInput([$('#Inputname'), $('#Inputvcpu'), $('#Inputmem'), $('#Inputtemplate')]);
+                        toastr['success']('申請虛擬機器成功','成功');
+                    
                     }
                 });
-
-                
-                
             }
              
         });

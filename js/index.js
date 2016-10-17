@@ -29,6 +29,7 @@ index.setting = {
       "hideMethod": "fadeOut"
 }
 
+
 toastr.options = index.setting;
 
 
@@ -156,7 +157,6 @@ toastr.options = index.setting;
         index.getVMList(index.uid).done(function (data) {
         var isadmin = data.isadmin == '1'? true : false;
         isadmin ? $('.isadmin').show() : $('.isadmin').hide();
-
         delete data.isadmin;
 
         $.map(data, function(value){ return [value];}).forEach(function (vm) {
@@ -165,7 +165,7 @@ toastr.options = index.setting;
             var action_td = $('<td>').attr({id: 'vmControl'});
             var div = $('<div>');
             if(vm.name != null) {
-                index.isadmin && tr.append($('<td id="uid">').text(vm.uid));
+                isadmin && tr.append($('<td id="uid">').text(vm.uid));
                 tr.append($('<td id="name">').text(vm.name));
                 isadmin && tr.append($('<td id="host">').text(parseInt(vm.host) + 1));
                 tr.append($('<td id="vcpu">').text(vm.vcpu));

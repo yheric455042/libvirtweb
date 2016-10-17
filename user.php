@@ -9,9 +9,11 @@ class User {
     }
     
     public function getUser() {
-        session_start();
-         
         return array('uid' => $_SESSION['uid'], 'isadmin' => $_SESSION['isadmin']);
+    }
+    
+    public function isadmin() {
+        return $_SESSION['isadmin'];
     }
 
 	public function login($params) {
@@ -24,9 +26,8 @@ class User {
 		if(sizeof($query)) {
 			foreach($query as $userarray) {
 				
-				session_start();
 				$_SESSION['uid'] = $uid;
-				$_SESSION['isadmin'] = $userarray['isadmin']; 
+				$_SESSION['isadmin'] = intval($userarray['isadmin']); 
 				return 'success';
 			}
 			
@@ -37,10 +38,8 @@ class User {
 	}
 
     public function getuserList() {
-        $userArray = $this->getUser();
-        $isadmin = $userArray['isadmin'] == '1' ? true : false;
-        
-        if($isadmin) {
+                
+        if($this->isadmin()) {
             $users = $this->mysql->select("SELECT uid, displayname, email, isadmin FROM user",array());
 
             return $users;
@@ -54,11 +53,9 @@ class User {
         $password = $params['password'];
         $displayname = $params['displayname'];
         $email = $params['email'];
-        $user = $this->getUser();
-        $isadmin = $user['isadmin'] == '1' ? true :false;
-        
+
         $sql = "INSERT INTO user (uid, passwd, displayname, email) VALUES(?,?,?,?)";
-        $status = $isadmin ? $this->mysql->execute($sql, array($uid,$password, $displayname, $email)) : false;
+        $status = $this->isadmin() ? $this->mysql->execute($sql, array($uid,$password, $displayname, $email)) : false;
         if($status) {
             return 'success';
         }
@@ -80,28 +77,19 @@ class User {
         return 'error';
     }
 
-    public function removeUser($params) {
-        $userArray = $this->getUser();
-        $isadmin = $userArray['isadmin'] ? true: false;
-
-        $user = $params['user'];
-        $msg = $isadmin && $user != 'admin' ? 'success' : 'error';
-        if($isadmin && $user != 'admin') {
-            $this->mysql->execute('DELETE FROM user WHERE uid= ?', array($user));
+    public function removeUser($uid) {
+        
+        $msg = ($this->isadmin() && $uid != 'admin') ? ($this->mysql->execute('DELETE FROM user WHERE uid= ?', array($uid)) ? 'success' : 'error') : 'error';
             
-        }
 
         return $msg;
     }
 
     public function modifyAdmin($params) {
-        $userArray = $this->getUser();
-        $isadmin = $userArray['isadmin'] ? true: false;
-
         $user = $params['user'];
         
-        $msg = $isadmin && $user != 'admin' ? 'success' : 'error';
-        if($isadmin && $user != 'admin') {
+        $msg = $this->isadmin() && $user != 'admin' ? 'success' : 'error';
+        if($this->isadmin() && $user != 'admin') {
             $this->mysql->execute('UPDATE user SET isadmin = ? WHERE uid= ?', array(intval($params['admin']), $user));
             
         }
